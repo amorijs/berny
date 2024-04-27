@@ -1,16 +1,13 @@
-const {
+import {
   uniqueNamesGenerator,
   adjectives,
   colors,
   animals,
-} = require('unique-names-generator')
+} from 'unique-names-generator'
 
-export const createRandomEmail = () => {
-  const randomEmail = uniqueNamesGenerator({
+export const createRandomEmail = () =>
+  uniqueNamesGenerator({
     dictionaries: [adjectives, colors, animals],
     separator: '',
     style: 'lowerCase',
   })
-
-  return randomEmail
-}

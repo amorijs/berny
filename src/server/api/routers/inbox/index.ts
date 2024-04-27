@@ -1,4 +1,4 @@
-import MailSlurp, { SendEmailOptions } from 'mailslurp-client'
+import MailSlurp, { type SendEmailOptions } from 'mailslurp-client'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
 import { DomainsTable, ProxiesTable, UsersTable } from '~/server/db/schema'
 
@@ -159,7 +159,9 @@ export const inboxRouter = createTRPCRouter({
         console.log('Sending email...')
         await mailslurp.sendEmail(inbox.id, options)
         console.log('Email sent!')
-        return 'OK'
       })
+
+      await Promise.all(reroutePromises)
+      return 'OK'
     }),
 })
