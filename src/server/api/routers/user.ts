@@ -33,7 +33,7 @@ export const userRouter = createTRPCRouter({
         .returning()
     }),
 
-  clerkWebhook: publicProcedure.query(async ({ input }) => {
+  clerkWebhook: publicProcedure.mutation(async ({ input }) => {
     console.log({ input })
   }),
 })
