@@ -29,18 +29,6 @@ export default function DashboardHome({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className=" flex  w-full justify-between pb-5 pt-5">
-        <div className="flex items-center">
-          <Image
-            className="cursor-pointer rounded-full"
-            src="/bernielogo_darkouttranspin.png"
-            width={75}
-            height={75}
-            alt="bernylogo"
-          />
-        </div>
-      </div>
-      <Separator />
       <div>
         <div className="pt-10">
           <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
