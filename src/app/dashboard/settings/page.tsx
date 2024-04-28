@@ -66,6 +66,9 @@ export default function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
+  const isSubmitDisabled =
+    isPending || form.getValues('email') === user?.[0]?.email
+
   return (
     <Card>
       <CardHeader title="Settings" />
@@ -95,12 +98,7 @@ export default function Settings() {
                 </FormItem>
               )}
             />
-            <Button
-              disabled={
-                isPending || form.getValues('email') === user?.[0]?.email
-              }
-              type="submit"
-            >
+            <Button disabled={isSubmitDisabled} type="submit">
               Submit
             </Button>
           </form>

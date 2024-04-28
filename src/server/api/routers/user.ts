@@ -33,7 +33,11 @@ export const userRouter = createTRPCRouter({
         .returning()
     }),
 
-  clerkWebhook: publicProcedure.mutation(async ({ input }) => {
-    console.log({ input })
-  }),
+  clerkWebhook: publicProcedure
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
+    .input((input) => input as any)
+    .mutation(async ({ input }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      console.log({ input })
+    }),
 })
