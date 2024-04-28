@@ -34,7 +34,7 @@ import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { WebhookNewEmailPayloadSchema } from './types'
-import { sql } from 'drizzle-orm'
+import { and, ilike, sql } from 'drizzle-orm'
 
 export const inboxRouter = createTRPCRouter({
   create: publicProcedure
@@ -69,6 +69,61 @@ export const inboxRouter = createTRPCRouter({
       })
 
       return proxy.email
+    }),
+
+  inboxes: publicProcedure
+    .input(z.object({ search: z.string().default('') }))
+    .query(async ({ input, ctx }) => {
+      if (input.search.length > 2) {
+        const proxiesResponse = await ctx.db
+          .select()
+          .from(ProxiesTable)
+          .where(ilike(ProxiesTable.email, `%${input.search}%`))
+          .rightJoin(
+            DomainsTable,
+            sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
+          )
+
+        const domainsResponse = await ctx.db
+          .select()
+          .from(DomainsTable)
+          .where(ilike(DomainsTable.domain, `%${input.search}%`))
+          .rightJoin(
+            ProxiesTable,
+            sql`${DomainsTable}.proxy_id = ${ProxiesTable}.id`
+          )
+
+        return [...domainsResponse, ...proxiesResponse]
+          .filter((el) => el)
+          .map(({ proxies: proxy, domains: domain }) => {
+            if (!proxy || !domain) {
+              return null
+            }
+
+            return { ...proxy, domain: domain }
+          })
+          .filter((el) => el)
+      } else {
+        const response = await ctx.db
+          .select()
+          .from(ProxiesTable)
+          .where(sql`user_id = 1`)
+          .rightJoin(
+            DomainsTable,
+            sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
+          )
+
+        return response
+          .filter((el) => el)
+          .map(({ proxies: proxy, domains: domain }) => {
+            if (!proxy || !domain) {
+              return null
+            }
+
+            return { ...proxy, domain: domain }
+          })
+          .filter((el) => el)
+      }
     }),
 
   incoming: publicProcedure

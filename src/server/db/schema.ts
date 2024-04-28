@@ -1,6 +1,5 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
-
 import {
   integer,
   pgTableCreator,
@@ -16,7 +15,7 @@ import {
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `berny_${name}`)
+export const createTable = pgTableCreator((name) => `${name}`)
 
 export const UsersTable = createTable(
   'users',
@@ -39,6 +38,7 @@ export const ProxiesTable = createTable('proxies', {
     .references(() => UsersTable.id)
     .notNull(),
   inbox_id: text('inbox_id').notNull(),
+  icon: text('icon'),
   created_at: timestamp('created_at').defaultNow().notNull(),
 })
 
