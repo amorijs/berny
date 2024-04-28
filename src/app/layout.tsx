@@ -2,6 +2,13 @@ import '~/styles/globals.css'
 
 import { Inter } from 'next/font/google'
 
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
 import { TRPCReactProvider } from '~/trpc/react'
 import { ThemeProvider } from '~/components/ui/themeProvider'
 import { cn } from '~/lib/utils'
@@ -24,25 +31,53 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body
-        className={cn(
-          `font-sans ${inter.variable}`,
-          'flex h-screen w-screen justify-center pt-10'
-        )}
-      >
-        <TRPCReactProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <div className="min-h-screen w-full max-w-7xl">{children}</div>
-          </ThemeProvider>
-        </TRPCReactProvider>
-        <Toaster />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body
+          className={cn(
+            `font-sans ${inter.variable}`,
+            'flex h-screen w-screen flex-col items-center pt-10'
+          )}
+        >
+          <TRPCReactProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <header className="">
+                <SignedOut>
+                  <SignInButton />
+                </SignedOut>
+              </header>
+              <SignedIn>
+                <div className="min-h-screen w-full max-w-7xl">
+                  <header className="flex justify-end">
+                    <UserButton />
+                    <nav className="ml-5 flex items-center space-x-4">
+                      <a
+                        href="/dashboard/settings"
+                        className="font-semibold text-primary-foreground"
+                      >
+                        Settings
+                      </a>
+                      <a
+                        href="/logout"
+                        className="font-semibold text-primary-foreground"
+                      >
+                        Logout
+                      </a>
+                    </nav>
+                  </header>
+                  {children}
+                </div>
+              </SignedIn>
+            </ThemeProvider>
+          </TRPCReactProvider>
+          <Toaster />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }
