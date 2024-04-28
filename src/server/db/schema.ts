@@ -22,11 +22,13 @@ export const UsersTable = createTable(
   {
     id: serial('id').primaryKey(),
     email: text('email').notNull(),
+    clerk_id: text('clerk_id').notNull(),
     created_at: timestamp('created_at').defaultNow().notNull(),
   },
   (users) => {
     return {
       uniqueIdx: uniqueIndex('unique_idx').on(users.email),
+      uniqueIndex: uniqueIndex('unique_index').on(users.clerk_id),
     }
   }
 )

@@ -1,5 +1,9 @@
 import MailSlurp, { type SendEmailOptions } from 'mailslurp-client'
-import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
+import {
+  authedProcedure,
+  createTRPCRouter,
+  publicProcedure,
+} from '~/server/api/trpc'
 import { DomainsTable, ProxiesTable, UsersTable } from '~/server/db/schema'
 
 const mailslurp = new MailSlurp({
@@ -37,7 +41,7 @@ import { WebhookNewEmailPayloadSchema } from './types'
 import { ilike, sql } from 'drizzle-orm'
 
 export const inboxRouter = createTRPCRouter({
-  create: publicProcedure
+  create: authedProcedure
     .input(z.object({ domain: z.string().min(3) }))
     .mutation(async ({ ctx, input }) => {
       const newEmail = createRandomEmail()
@@ -51,7 +55,7 @@ export const inboxRouter = createTRPCRouter({
         .insert(ProxiesTable)
         .values({
           email: inbox.emailAddress,
-          user_id: 1,
+          user_id: ctx.user.userId!,
           inbox_id: inbox.id,
         })
         .returning()

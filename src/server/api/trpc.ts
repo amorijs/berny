@@ -6,11 +6,14 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { auth } from '@clerk/nextjs/server'
+import { TRPCError, initTRPC } from '@trpc/server'
+import superjson from 'superjson'
+import { ZodError } from 'zod'
 
-import { db } from "~/server/db";
+import { db } from '~/server/db'
+import { UsersTable } from '../db/schema'
+import { sql } from 'drizzle-orm'
 
 /**
  * 1. CONTEXT
@@ -25,11 +28,25 @@ import { db } from "~/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const clerkUser = auth()
+
+  if (!clerkUser) {
+  }
+
+  const [user] = await db
+    .select({ id: UsersTable.id })
+    .from(UsersTable)
+    .where(sql`clerk_id = ${clerkUser.userId}`)
+
   return {
     db,
+    user: {
+      userId: user?.id,
+      clerkId: clerkUser.userId,
+    },
     ...opts,
-  };
-};
+  }
+}
 
 /**
  * 2. INITIALIZATION
@@ -48,16 +65,16 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
         zodError:
           error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
-    };
+    }
   },
-});
+})
 
 /**
  * Create a server-side caller.
  *
  * @see https://trpc.io/docs/server/server-side-calls
  */
-export const createCallerFactory = t.createCallerFactory;
+export const createCallerFactory = t.createCallerFactory
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
@@ -71,7 +88,7 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
-export const createTRPCRouter = t.router;
+export const createTRPCRouter = t.router
 
 /**
  * Public (unauthenticated) procedure
@@ -80,4 +97,26 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure
+
+export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
+  const { ctx } = opts
+
+  if (!ctx.user.clerkId) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'User not found',
+    })
+  }
+
+  if (!ctx.user.userId) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'User not initialized',
+    })
+  }
+
+  return opts.next({
+    ctx,
+  })
+})
