@@ -38,7 +38,7 @@ import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { WebhookNewEmailPayloadSchema } from './types'
-import { ilike, sql } from 'drizzle-orm'
+import { and, ilike, sql } from 'drizzle-orm'
 
 export const inboxRouter = createTRPCRouter({
   create: authedProcedure
@@ -55,7 +55,7 @@ export const inboxRouter = createTRPCRouter({
         .insert(ProxiesTable)
         .values({
           email: inbox.emailAddress,
-          user_id: ctx.user.userId!,
+          user_id: ctx.user.userId,
           inbox_id: inbox.id,
         })
         .returning()
@@ -82,7 +82,12 @@ export const inboxRouter = createTRPCRouter({
         const proxiesResponse = await ctx.db
           .select()
           .from(ProxiesTable)
-          .where(ilike(ProxiesTable.email, `%${input.search}%`))
+          .where(
+            and(
+              sql`user_id = ${ctx.user.userId}`,
+              ilike(ProxiesTable.email, `%${input.search}%`)
+            )
+          )
           .rightJoin(
             DomainsTable,
             sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
@@ -91,7 +96,12 @@ export const inboxRouter = createTRPCRouter({
         const domainsResponse = await ctx.db
           .select()
           .from(DomainsTable)
-          .where(ilike(DomainsTable.domain, `%${input.search}%`))
+          .where(
+            and(
+              sql`user_id = ${ctx.user.userId}`,
+              ilike(DomainsTable.domain, `%${input.search}%`)
+            )
+          )
           .rightJoin(
             ProxiesTable,
             sql`${DomainsTable}.proxy_id = ${ProxiesTable}.id`
@@ -111,7 +121,7 @@ export const inboxRouter = createTRPCRouter({
         const response = await ctx.db
           .select()
           .from(ProxiesTable)
-          .where(sql`user_id = 1`)
+          .where(sql`user_id = ${ctx.user.userId}`)
           .rightJoin(
             DomainsTable,
             sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
