@@ -10,22 +10,13 @@ import {
 import { UsersTable } from '~/server/db/schema'
 
 export const userRouter = createTRPCRouter({
-  get: publicProcedure
+  get: authedProcedure
     .input(z.object({ clerkId: z.string().optional() }).optional())
-    .query(async ({ ctx, input }) => {
-      const clerkId = input?.clerkId ?? ctx.user?.clerkId
-
-      if (!clerkId) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'clerkId is required',
-        })
-      }
-
+    .query(async ({ ctx }) => {
       return ctx.db
         .select()
         .from(UsersTable)
-        .where(sql`clerk_id = ${clerkId}`)
+        .where(sql`id = ${ctx.user.userId}`)
     }),
 
   create: publicProcedure
