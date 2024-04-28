@@ -1,7 +1,6 @@
 import { type WebhookEvent } from '@clerk/nextjs/server'
 import { db } from '~/server/db'
 import { UsersTable } from '~/server/db/schema'
-import { api } from '~/trpc/server'
 
 export async function POST(request: Request) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -14,7 +13,7 @@ export async function POST(request: Request) {
     })
   }
 
-  return 'ok'
+  return Response.json({ message: 'OK' })
 }
 
 export async function GET() {
