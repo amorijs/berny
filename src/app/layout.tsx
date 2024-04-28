@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google'
 import {
   ClerkProvider,
   SignInButton,
+  SignOutButton,
   SignedIn,
   SignedOut,
   UserButton,
@@ -62,12 +63,13 @@ export default function RootLayout({
                       >
                         Settings
                       </a>
-                      <a
+                      <SignOutButton />
+                      {/* <a
                         href="/logout"
                         className="font-semibold text-primary-foreground"
                       >
                         Logout
-                      </a>
+                      </a> */}
                     </nav>
                   </header>
                   {children}

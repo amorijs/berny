@@ -30,9 +30,6 @@ import { sql } from 'drizzle-orm'
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const clerkUser = auth()
 
-  if (!clerkUser) {
-  }
-
   const [user] = await db
     .select({ id: UsersTable.id })
     .from(UsersTable)
@@ -42,7 +39,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     db,
     user: {
       userId: user?.id,
-      clerkId: clerkUser.userId,
+      clerkId: clerkUser?.userId,
     },
     ...opts,
   }
@@ -117,6 +114,13 @@ export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
   }
 
   return opts.next({
-    ctx,
+    ctx: {
+      ...ctx,
+      user: {
+        ...ctx.user,
+        userId: ctx.user.userId,
+        clerkId: ctx.user.clerkId,
+      },
+    },
   })
 })
