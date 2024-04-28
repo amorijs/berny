@@ -34,7 +34,7 @@ import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { WebhookNewEmailPayloadSchema } from './types'
-import { and, ilike, sql } from 'drizzle-orm'
+import { ilike, sql } from 'drizzle-orm'
 
 export const inboxRouter = createTRPCRouter({
   create: publicProcedure

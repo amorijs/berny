@@ -16,10 +16,8 @@ import { Button } from '~/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '~/components/ui/dialog'
 import {
   Form,
@@ -53,16 +51,14 @@ export default function Inboxes() {
     },
   })
 
-  const {
-    data: inboxes,
-    error,
-    isLoading,
-  } = api.inbox.inboxes.useQuery({ search: debouncedSearch })
+  const { data: inboxes, isLoading } = api.inbox.inboxes.useQuery({
+    search: debouncedSearch,
+  })
 
   const utils = api.useUtils()
 
-  const { data, isPending, isSuccess, mutate } = api.inbox.create.useMutation({
-    onSuccess: (email) => {
+  const { isPending, mutate } = api.inbox.create.useMutation({
+    onSuccess: async (email) => {
       form.reset()
       setAddNew(false)
 
@@ -71,7 +67,7 @@ export default function Inboxes() {
         description: <div>{email}</div>,
       })
 
-      utils.inbox.inboxes.invalidate()
+      await utils.inbox.inboxes.invalidate()
     },
   })
 
