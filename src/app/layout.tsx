@@ -63,13 +63,14 @@ export default function RootLayout({
                       >
                         Settings
                       </a>
-                      <SignOutButton />
-                      {/* <a
-                        href="/logout"
-                        className="font-semibold text-primary-foreground"
-                      >
-                        Logout
-                      </a> */}
+                      <SignOutButton>
+                        <a
+                          className="font-semibold text-primary-foreground"
+                          href="#"
+                        >
+                          Sign Out
+                        </a>
+                      </SignOutButton>
                     </nav>
                   </header>
                   {children}
