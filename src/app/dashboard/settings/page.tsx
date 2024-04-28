@@ -39,6 +39,8 @@ export default function Settings() {
     },
   })
 
+  const [watchedEmail] = form.watch(['email'])
+
   const { data: user, isLoading, error } = api.user.get.useQuery()
 
   const { mutateAsync, isPending } = api.user.update.useMutation({
@@ -66,8 +68,7 @@ export default function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const isSubmitDisabled =
-    isPending || form.getValues('email') === user?.[0]?.email
+  const isSubmitDisabled = isPending || watchedEmail === user?.[0]?.email
 
   return (
     <Card>
