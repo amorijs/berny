@@ -82,7 +82,7 @@ export default function Inboxes() {
           onClick={() => setAddNew(true)}
           className="absolute right-[1.5rem] top-[1.5rem]"
         >
-          Create New Proxy
+          Create New Inbox
         </Button>
         <CardHeader>
           <CardTitle>Inboxes</CardTitle>

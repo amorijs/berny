@@ -4,7 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure,
 } from '~/server/api/trpc'
-import { DomainsTable, ProxiesTable, UsersTable } from '~/server/db/schema'
+import { DomainsTable, InboxesTable, UsersTable } from '~/server/db/schema'
 
 const mailslurp = new MailSlurp({
   apiKey: process.env.MAIL_SLURP_API_KEY!,
@@ -46,51 +46,51 @@ export const inboxRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const newEmail = createRandomEmail()
 
-      const inbox = await mailslurp.inboxController.createInbox({
+      const mailslurpInbox = await mailslurp.inboxController.createInbox({
         name: newEmail,
         emailAddress: newEmail + '@mailslurp.net',
       })
 
-      const [proxy] = await ctx.db
-        .insert(ProxiesTable)
+      const [inbox] = await ctx.db
+        .insert(InboxesTable)
         .values({
-          email: inbox.emailAddress,
+          email: mailslurpInbox.emailAddress,
           user_id: ctx.user.userId,
-          inbox_id: inbox.id,
+          mailslurp_inbox_id: mailslurpInbox.id,
         })
         .returning()
 
-      if (!proxy) {
+      if (!inbox) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create proxy',
+          message: 'Failed to create inbox',
         })
       }
 
       await ctx.db.insert(DomainsTable).values({
         domain: input.domain,
-        proxy_id: proxy.id,
+        inbox_id: inbox.id,
       })
 
-      return proxy.email
+      return inbox.email
     }),
 
   inboxes: publicProcedure
     .input(z.object({ search: z.string().default('') }))
     .query(async ({ input, ctx }) => {
       if (input.search.length > 2) {
-        const proxiesResponse = await ctx.db
+        const inboxesResponse = await ctx.db
           .select()
-          .from(ProxiesTable)
+          .from(InboxesTable)
           .where(
             and(
               sql`user_id = ${ctx.user.userId}`,
-              ilike(ProxiesTable.email, `%${input.search}%`)
+              ilike(InboxesTable.email, `%${input.search}%`)
             )
           )
           .rightJoin(
             DomainsTable,
-            sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
+            sql`${InboxesTable}.id = ${DomainsTable}.inbox_id`
           )
 
         const domainsResponse = await ctx.db
@@ -103,38 +103,38 @@ export const inboxRouter = createTRPCRouter({
             )
           )
           .rightJoin(
-            ProxiesTable,
-            sql`${DomainsTable}.proxy_id = ${ProxiesTable}.id`
+            InboxesTable,
+            sql`${DomainsTable}.inbox_id = ${InboxesTable}.id`
           )
 
-        return [...domainsResponse, ...proxiesResponse]
+        return [...domainsResponse, ...inboxesResponse]
           .filter((el) => el)
-          .map(({ proxies: proxy, domains: domain }) => {
-            if (!proxy || !domain) {
+          .map(({ inboxes: inbox, domains: domain }) => {
+            if (!inbox || !domain) {
               return null
             }
 
-            return { ...proxy, domain: domain }
+            return { ...inbox, domain: domain }
           })
           .filter((el) => el)
       } else {
         const response = await ctx.db
           .select()
-          .from(ProxiesTable)
+          .from(InboxesTable)
           .where(sql`user_id = ${ctx.user.userId}`)
           .rightJoin(
             DomainsTable,
-            sql`${ProxiesTable}.id = ${DomainsTable}.proxy_id`
+            sql`${InboxesTable}.id = ${DomainsTable}.inbox_id`
           )
 
         return response
           .filter((el) => el)
-          .map(({ proxies: proxy, domains: domain }) => {
-            if (!proxy || !domain) {
+          .map(({ inboxes: inbox, domains: domain }) => {
+            if (!inbox || !domain) {
               return null
             }
 
-            return { ...proxy, domain: domain }
+            return { ...inbox, domain: domain }
           })
           .filter((el) => el)
       }
@@ -143,31 +143,31 @@ export const inboxRouter = createTRPCRouter({
   incoming: publicProcedure
     .input(WebhookNewEmailPayloadSchema)
     .mutation(async ({ ctx, input: incomingEmailPayload }) => {
-      const proxyEmails = incomingEmailPayload.to
+      const bernyInboxEmails = incomingEmailPayload.to
 
       // Reroute the email to the primary email
-      const reroutePromises = proxyEmails.map(async (proxyEmail) => {
-        // Get the proxy data
-        console.log('Fetching proxy...')
-        const [proxyData] = await ctx.db
+      const reroutePromises = bernyInboxEmails.map(async (bernyInboxEmail) => {
+        // Get the inbox data
+        console.log('Fetching inbox...')
+        const [inboxData] = await ctx.db
           .select()
-          .from(ProxiesTable)
-          .where(sql`email = ${proxyEmail}`)
-        console.log({ proxy: proxyData })
+          .from(InboxesTable)
+          .where(sql`email = ${bernyInboxEmail}`)
+        console.log({ inbox: inboxData })
 
-        if (!proxyData) {
+        if (!inboxData) {
           throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'Proxy not found',
+            message: 'Inbox not found',
           })
         }
 
-        // Get the domain belonging to this proxy
+        // Get the domain belonging to this inbox
         console.log('Fetching domain...')
         const [domainData] = await ctx.db
           .select()
           .from(DomainsTable)
-          .where(sql`proxy_id = ${proxyData.id}`)
+          .where(sql`inbox_id = ${inboxData.id}`)
         console.log({ domainData })
 
         if (!domainData) {
@@ -182,7 +182,7 @@ export const inboxRouter = createTRPCRouter({
         const [userData] = await ctx.db
           .select({ email: UsersTable.email })
           .from(UsersTable)
-          .where(sql`id = ${proxyData.user_id}`)
+          .where(sql`id = ${inboxData.user_id}`)
         console.log({ userData })
 
         if (!userData) {
@@ -200,7 +200,7 @@ export const inboxRouter = createTRPCRouter({
 
         // Get the mailslurp inbox
         console.log('Fetching inbox...')
-        const inbox = await mailslurp.getInbox(proxyData.inbox_id)
+        const inbox = await mailslurp.getInbox(inboxData.mailslurp_inbox_id)
         console.log({ inbox })
 
         const outgoingEmailHeader = headerHtml(
@@ -217,7 +217,7 @@ export const inboxRouter = createTRPCRouter({
         // Build the email options for mailslurp
         const options: SendEmailOptions = {
           to: [userData.email],
-          from: proxyData.email,
+          from: inboxData.email,
           subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
           body: outgoingEmailCompleteBody,
           isHTML: true,

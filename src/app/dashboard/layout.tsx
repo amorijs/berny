@@ -1,8 +1,6 @@
 'use client'
 
-import Image from 'next/image'
 import { SidebarNav } from './_components/SidebarNav'
-import { Separator } from '~/components/ui/separator'
 import { usePathname, redirect } from 'next/navigation'
 
 const sidebarNavItems = [

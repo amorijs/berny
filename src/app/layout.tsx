@@ -102,35 +102,6 @@ export default function RootLayout({
                 </SignedOut>
                 <SignedIn>{children}</SignedIn>
               </div>
-              {/* <header className="">
-                <SignedOut>
-                  <SignInButton />
-                </SignedOut>
-              </header> */}
-              {/* <SignedIn>
-                <div className="min-h-screen w-full max-w-7xl">
-                  <header className="flex justify-end">
-                    <UserButton />
-                    <nav className="ml-5 flex items-center space-x-4">
-                      <a
-                        href="/dashboard/settings"
-                        className="font-semibold text-primary-foreground"
-                      >
-                        Settings
-                      </a>
-                      <SignOutButton>
-                        <a
-                          className="font-semibold text-primary-foreground"
-                          href="#"
-                        >
-                          Sign Out
-                        </a>
-                      </SignOutButton>
-                    </nav>
-                  </header>
-                  {children}
-                </div>
-              </SignedIn> */}
             </ThemeProvider>
           </TRPCReactProvider>
           <Toaster />
