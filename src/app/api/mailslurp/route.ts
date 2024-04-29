@@ -52,19 +52,7 @@ export async function POST(request: Request) {
       throw new Error('Inbox not found')
     }
 
-    // Get the domain belonging to this inbox
-    console.log('Fetching domain...')
-    const [domainData] = await db
-      .select()
-      .from(DomainsTable)
-      .where(sql`inbox_id = ${inboxData.id}`)
-    console.log({ domainData })
-
-    if (!domainData) {
-      throw new Error('Domain not found')
-    }
-
-    // Get the primary email
+    // Get the user data
     console.log('Fetching primary email...')
     const [userData] = await db
       .select({ email: UsersTable.email })
@@ -76,11 +64,32 @@ export async function POST(request: Request) {
       throw new Error('User not found')
     }
 
+    if (userData.email === incomingEmailPayload.from) {
+      // This is a reply to an email that was sent from Berny
+      return
+    }
+
+    // Get the domain data belonging to this inbox
+    console.log('Fetching domain...')
+    const [domainData] = await db
+      .select()
+      .from(DomainsTable)
+      .where(sql`inbox_id = ${inboxData.id}`)
+    console.log({ domainData })
+
+    if (!domainData) {
+      throw new Error('Domain not found')
+    }
+
     // Get the mailslurp email that was received
     console.log('Fetching email data...')
     const incomingEmailData = await mailslurp.getEmail(
       incomingEmailPayload.emailId
     )
+
+    if (userData.email === incomingEmailPayload.from) {
+      // This is a reply to an email that was sent from Berny
+    }
 
     // Get the mailslurp inbox
     console.log('Fetching inbox...')
