@@ -36,6 +36,7 @@ const headerHtml = (emailFrom: string, domains: string[]) => {
 
 export async function POST(request: Request) {
   const incomingEmailPayload = (await request.json()) as WebhookNewEmailPayload
+  console.log({ incomingEmailPayload })
   const bernyInboxEmails = incomingEmailPayload.to
 
   // Reroute the email to the primary email
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     // Get the user data
-    console.log('Fetching primary email...')
+    console.log('Fetching user...')
     const [userData] = await db
       .select({ email: UsersTable.email })
       .from(UsersTable)
@@ -64,10 +65,10 @@ export async function POST(request: Request) {
       throw new Error('User not found')
     }
 
-    if (userData.email === incomingEmailPayload.from) {
-      // This is a reply to an email that was sent from Berny
-      return
-    }
+    // if (userData.email === incomingEmailPayload.from) {
+    // // This is a reply to an email that was sent from Berny
+    // return
+    // }
 
     // Get the domain data belonging to this inbox
     console.log('Fetching domain...')
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
     const incomingEmailData = await mailslurp.getEmail(
       incomingEmailPayload.emailId
     )
+    console.log({ incomingEmailData })
 
     if (userData.email === incomingEmailPayload.from) {
       // This is a reply to an email that was sent from Berny
