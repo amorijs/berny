@@ -34,6 +34,8 @@ const headerHtml = (emailFrom: string, domains: string[]) => {
     `
 }
 
+const tempCache: Record<string, boolean> = {}
+
 export async function POST(request: Request) {
   const incomingEmailPayload = (await request.json()) as WebhookNewEmailPayload
   console.log({ incomingEmailPayload })
@@ -90,6 +92,12 @@ export async function POST(request: Request) {
     console.log({ incomingEmailData })
 
     if (userData.email === incomingEmailPayload.from) {
+      if (tempCache[userData.email + inboxData.email]) {
+        console.log('skipping email')
+        return
+      } else {
+        tempCache[userData.email + inboxData.email] = true
+      }
       // This is a reply to an email that was sent from Berny
     }
 
