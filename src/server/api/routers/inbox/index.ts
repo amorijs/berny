@@ -38,7 +38,7 @@ import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { WebhookNewEmailPayloadSchema } from './types'
-import { and, ilike, sql } from 'drizzle-orm'
+import { and, eq, ilike, sql } from 'drizzle-orm'
 
 export const inboxRouter = createTRPCRouter({
   create: authedProcedure
@@ -73,6 +73,42 @@ export const inboxRouter = createTRPCRouter({
       })
 
       return inbox.email
+    }),
+
+  delete: authedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const [deletedDomain] = await ctx.db
+        .delete(DomainsTable)
+        .where(eq(DomainsTable.inbox_id, input.id))
+        .returning()
+
+      if (!deletedDomain) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete domain',
+        })
+      }
+
+      const [deletedInbox] = await ctx.db
+        .delete(InboxesTable)
+        .where(eq(InboxesTable.id, input.id))
+        .returning()
+
+      if (!deletedInbox) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to delete inbox',
+        })
+      }
+
+      try {
+        await mailslurp.deleteInbox(deletedInbox.mailslurp_inbox_id)
+      } catch (error) {
+        console.error('Failed to delete inbox from mailslurp', error)
+      }
+
+      return 'OK'
     }),
 
   inboxes: publicProcedure

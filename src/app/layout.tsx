@@ -17,6 +17,7 @@ import { Toaster } from '~/components/ui/toaster'
 import Image from 'next/image'
 import { Separator } from '~/components/ui/separator'
 import { Landing } from './_components/Landing'
+import { TooltipProvider } from '~/components/ui/tooltip'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,7 +41,7 @@ export default function RootLayout({
         <body
           className={cn(
             `font-sans ${inter.variable}`,
-            'flex h-screen w-screen flex-col items-center pt-10'
+            'flex h-screen w-screen flex-col items-center overflow-hidden'
           )}
         >
           <TRPCReactProvider>
@@ -50,41 +51,10 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <div className="min-h-screen w-full max-w-7xl">
-                <header className="flex justify-end">
-                  <nav className="ml-5 flex w-full items-center space-x-4">
-                    <div className=" flex  w-full justify-between pb-5 pt-5">
-                      <div className="flex items-center">
-                        <a href="/">
-                          <Image
-                            className="mr-auto cursor-pointer rounded-full"
-                            src="/bernielogo_darkouttranspin.png"
-                            width={75}
-                            height={75}
-                            alt="bernylogo"
-                          />
-                        </a>
-                      </div>
-                    </div>
-
-                    <SignedIn>
-                      <UserButton />
-                      <a
-                        href="/dashboard"
-                        className="font-semibold text-primary-foreground"
-                      >
-                        Dashboard
-                      </a>
-                      <SignOutButton>
-                        <a
-                          className="min-w-[4rem] font-semibold text-primary-foreground"
-                          href="#"
-                        >
-                          Sign Out
-                        </a>
-                      </SignOutButton>
-                    </SignedIn>
-                    <SignedOut>
+              <>
+                <SignedOut>
+                  <header className="flex justify-end">
+                    <nav className="ml-5 flex w-full items-center space-x-4">
                       <SignInButton>
                         <a
                           className="min-w-[4rem] font-semibold text-primary-foreground"
@@ -93,15 +63,17 @@ export default function RootLayout({
                           Sign In
                         </a>
                       </SignInButton>
-                    </SignedOut>
-                  </nav>
-                </header>
+                    </nav>
+                  </header>
+                </SignedOut>
                 <Separator />
                 <SignedOut>
                   <Landing />
                 </SignedOut>
-                <SignedIn>{children}</SignedIn>
-              </div>
+                <SignedIn>
+                  <TooltipProvider>{children}</TooltipProvider>
+                </SignedIn>
+              </>
             </ThemeProvider>
           </TRPCReactProvider>
           <Toaster />
