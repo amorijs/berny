@@ -2,19 +2,11 @@ import '~/styles/globals.css'
 
 import { Inter } from 'next/font/google'
 
-import {
-  ClerkProvider,
-  SignInButton,
-  SignOutButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from '@clerk/nextjs'
+import { ClerkProvider, SignInButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import { TRPCReactProvider } from '~/trpc/react'
 import { ThemeProvider } from '~/components/ui/themeProvider'
 import { cn } from '~/lib/utils'
 import { Toaster } from '~/components/ui/toaster'
-import Image from 'next/image'
 import { Separator } from '~/components/ui/separator'
 import { Landing } from './_components/Landing'
 import { TooltipProvider } from '~/components/ui/tooltip'

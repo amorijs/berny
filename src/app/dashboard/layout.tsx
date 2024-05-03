@@ -1,24 +1,6 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import {
-  Home,
-  LineChart,
-  Package,
-  Package2,
-  PanelLeft,
-  Search,
-  ShoppingCart,
-  Users2,
-} from 'lucide-react'
+import { Search } from 'lucide-react'
 
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '~/components/ui/breadcrumb'
 import { Button } from '~/components/ui/button'
 import {
   DropdownMenu,
