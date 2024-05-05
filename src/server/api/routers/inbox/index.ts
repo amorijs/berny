@@ -59,7 +59,12 @@ export const inboxRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const deleteInboxExp = qb.delete(qb.Inbox, () => ({
-        filter_single: { id: input.id, user: { id: ctx.user.id } },
+        filter_single: {
+          id: input.id,
+          user: qb.select(qb.User, () => ({
+            filter_single: { id: ctx.user.id },
+          })),
+        },
       }))
 
       const deletedInbox = await qb
