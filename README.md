@@ -30,5 +30,9 @@ Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/ver
 
 ## Commands
 
-- Push DB schema: `npx drizzle-kit push:pg`
+<!-- - Push DB schema: `npx drizzle-kit push:pg` -->
+
 - Pull env vars: `vercel env pull`
+- Create edgedb migration: `edgedb migration create`
+- Execute edgedb migration: `edgedb migrate`
+- Generate edgedb types: `bunx @edgedb/generate edgeql-js` OR `bun run generate-types`
