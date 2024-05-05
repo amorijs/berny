@@ -53,7 +53,7 @@ export default function Settings() {
     onSuccess: (data) => {
       toast({
         title: 'Email updated!',
-        description: <div>{data?.[0]?.email}</div>,
+        description: <div>{data?.email}</div>,
       })
     },
   })
@@ -67,14 +67,14 @@ export default function Settings() {
   }
 
   useEffect(() => {
-    if (user?.[0]?.email && !lockEmail) {
-      form.setValue('email', user[0].email)
+    if (user?.email && !lockEmail) {
+      form.setValue('email', user.email)
       setLockEmail(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const isSubmitDisabled = isPending || watchedEmail === user?.[0]?.email
+  const isSubmitDisabled = isPending || watchedEmail === user?.email
 
   return (
     <Card>

@@ -12,8 +12,7 @@ import superjson from 'superjson'
 import { ZodError } from 'zod'
 
 import { db } from '~/server/db'
-import { UsersTable } from '../db/schema'
-import { sql } from 'drizzle-orm'
+import { client, qb } from '../db/edge'
 
 /**
  * 1. CONTEXT
@@ -30,16 +29,19 @@ import { sql } from 'drizzle-orm'
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const clerkUser = auth()
 
-  const [user] = await db
-    .select({ id: UsersTable.id })
-    .from(UsersTable)
-    .where(sql`clerk_id = ${clerkUser.userId}`)
+  const user = await qb
+    .select(qb.User, () => ({
+      id: true,
+      clerkId: true,
+      filter_single: { clerkId: clerkUser.userId },
+    }))
+    .run(client)
 
   return {
     db,
     user: {
-      userId: user?.id,
-      clerkId: clerkUser?.userId,
+      id: user?.id,
+      clerkId: user?.clerkId,
     },
     ...opts,
   }
@@ -106,7 +108,7 @@ export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
     })
   }
 
-  if (!ctx.user.userId) {
+  if (!ctx.user?.id) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: 'User not initialized',
@@ -118,7 +120,7 @@ export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
       ...ctx,
       user: {
         ...ctx.user,
-        userId: ctx.user.userId,
+        id: ctx.user.id,
         clerkId: ctx.user.clerkId,
       },
     },

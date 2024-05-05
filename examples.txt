@@ -1,0 +1,15 @@
+const actors = e.select(e.Person, ...);
+e.update(e.Movie, movie => ({
+  filter_single: {title: 'The Eternals'},
+  set: {
+    actors: { "+=": actors },
+  }
+}))
+
+const actors = e.select(e.Person, ...);
+e.update(e.Movie, movie => ({
+  filter_single: {title: 'The Eternals'},
+  set: {
+    actors: { "-=": actors },
+  }
+}))

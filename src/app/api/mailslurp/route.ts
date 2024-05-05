@@ -1,10 +1,8 @@
-import { sql } from 'drizzle-orm'
 import MailSlurp, {
   type SendEmailOptions,
   type WebhookNewEmailPayload,
 } from 'mailslurp-client'
-import { db } from '~/server/db'
-import { DomainsTable, InboxesTable, UsersTable } from '~/server/db/schema'
+import { client, qb } from '~/server/db/edge'
 
 const mailslurp = new MailSlurp({
   apiKey: process.env.MAIL_SLURP_API_KEY!,
@@ -45,44 +43,30 @@ export async function POST(request: Request) {
   const reroutePromises = bernyInboxEmails.map(async (bernyInboxEmail) => {
     // Get the inbox data
     console.log('Fetching inbox...')
-    const [inboxData] = await db
-      .select()
-      .from(InboxesTable)
-      .where(sql`email = ${bernyInboxEmail}`)
+    const inboxData = await qb
+      .select(qb.Inbox, () => ({
+        id: true,
+        email: true,
+        mailslurpInboxId: true,
+        user: {
+          email: true,
+        },
+        domains: {
+          name: true,
+        },
+        filter_single: { email: bernyInboxEmail },
+      }))
+      .run(client)
     console.log({ inbox: inboxData })
 
     if (!inboxData) {
       throw new Error('Inbox not found')
     }
 
-    // Get the user data
-    console.log('Fetching user...')
-    const [userData] = await db
-      .select({ email: UsersTable.email })
-      .from(UsersTable)
-      .where(sql`id = ${inboxData.user_id}`)
-    console.log({ userData })
-
-    if (!userData) {
-      throw new Error('User not found')
-    }
-
     // if (userData.email === incomingEmailPayload.from) {
     // // This is a reply to an email that was sent from Berny
     // return
     // }
-
-    // Get the domain data belonging to this inbox
-    console.log('Fetching domain...')
-    const [domainData] = await db
-      .select()
-      .from(DomainsTable)
-      .where(sql`inbox_id = ${inboxData.id}`)
-    console.log({ domainData })
-
-    if (!domainData) {
-      throw new Error('Domain not found')
-    }
 
     // Get the mailslurp email that was received
     console.log('Fetching email data...')
@@ -91,24 +75,24 @@ export async function POST(request: Request) {
     )
     console.log({ incomingEmailData })
 
-    if (userData.email === incomingEmailPayload.from) {
-      if (tempCache[userData.email + inboxData.email]) {
+    if (inboxData.user.email === incomingEmailPayload.from) {
+      if (tempCache[inboxData.user.email + inboxData.email]) {
         console.log('skipping email')
         return
       } else {
-        tempCache[userData.email + inboxData.email] = true
+        tempCache[inboxData.user.email + inboxData.email] = true
       }
       // This is a reply to an email that was sent from Berny
     }
 
     // Get the mailslurp inbox
     console.log('Fetching inbox...')
-    const inbox = await mailslurp.getInbox(inboxData.mailslurp_inbox_id)
+    const inbox = await mailslurp.getInbox(inboxData.mailslurpInboxId)
     console.log({ inbox })
 
     const outgoingEmailHeader = headerHtml(
       incomingEmailData.from ?? 'unknown',
-      [domainData.domain]
+      [inboxData.domains[0]?.name ?? 'unknown']
     )
     // Format the email body if it's not HTML (plain text)
     const outgoingEmailBody = incomingEmailData.isHTML
@@ -118,7 +102,7 @@ export async function POST(request: Request) {
 
     // Build the email options for mailslurp
     const options: SendEmailOptions = {
-      to: [userData.email],
+      to: [inboxData.user.email],
       from: inboxData.email,
       subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
       body: outgoingEmailCompleteBody,

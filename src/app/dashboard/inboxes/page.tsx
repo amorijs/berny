@@ -49,7 +49,6 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
-import { type InboxType } from '~/types'
 
 const FormSchema = z.object({
   website: z.string().min(5, {
@@ -61,7 +60,10 @@ export default function Inboxes() {
   const [search, setSearch] = useState('')
   const [debouncedSearch] = useDebounce(search, 300)
   const [addNew, setAddNew] = useState(false)
-  const [inboxToDelete, setInboxToDelete] = useState<InboxType | null>(null)
+  const [inboxToDelete, setInboxToDelete] = useState<{
+    id: string
+    email: string
+  } | null>(null)
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -216,9 +218,9 @@ export default function Inboxes() {
             </TableHeader>
             <TableBody>
               {inboxes?.map((inbox) => (
-                <TableRow className="cursor-pointer" key={inbox?.id}>
+                <TableRow className="cursor-pointer" key={inbox.id}>
                   <TableCell className="hidden md:table-cell">
-                    {inbox?.domain.domain}
+                    {inbox.domains[0]?.name}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{inbox?.email}</div>
@@ -232,7 +234,7 @@ export default function Inboxes() {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    {inbox?.created_at?.toDateString()}
+                    {inbox.createdAt.toDateString()}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

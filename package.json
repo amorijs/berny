@@ -9,7 +9,8 @@
     "db:studio": "drizzle-kit studio",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "generate-types": "bunx @edgedb/generate edgeql-js"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.3",
@@ -37,6 +38,7 @@
     "cmdk": "^1.0.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.4",
+    "edgedb": "^1.5.5",
     "framer-motion": "^11.1.7",
     "lucide-react": "^0.376.0",
     "mailslurp-client": "^15.20.0",
@@ -56,6 +58,7 @@
     "zod": "^3.23.4"
   },
   "devDependencies": {
+    "@edgedb/generate": "^0.5.3",
     "@types/eslint": "^8.56.2",
     "@types/node": "^20.11.20",
     "@types/react": "^18.2.57",
@@ -76,5 +79,6 @@
   "ct3aMetadata": {
     "initVersion": "7.32.0"
   },
-  "packageManager": "npm@10.3.0"
+  "packageManager": "npm@10.3.0",
+  "license": "MIT"
 }
