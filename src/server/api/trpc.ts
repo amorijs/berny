@@ -11,7 +11,6 @@ import { TRPCError, initTRPC } from '@trpc/server'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
 
-import { db } from '~/server/db'
 import { client, qb } from '../db/edge'
 
 /**
@@ -38,7 +37,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
     .run(client)
 
   return {
-    db,
     user: {
       id: user?.id,
       clerkId: user?.clerkId,
