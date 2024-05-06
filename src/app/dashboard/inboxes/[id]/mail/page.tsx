@@ -20,23 +20,11 @@ import { Nav } from './_components/nav'
 import { MailList } from './_components/mail-list'
 import { MailDisplay } from './_components/mail-display'
 
-interface MailProps {
-  accounts: {
-    label: string
-    email: string
-    icon: React.ReactNode
-  }[]
-  mails: Mail[]
-  defaultLayout: number[] | undefined
-  defaultCollapsed?: boolean
-  navCollapsedSize: number
-}
+const defaultLayout = [265, 440, 655]
+const defaultCollapsed = false
+const navCollapsedSize = 4
 
-export default function Mail({
-  defaultLayout = [265, 440, 655],
-  defaultCollapsed = false,
-  navCollapsedSize = 4,
-}: MailProps) {
+export default function Mail() {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
   const [mail] = useMail()
 
