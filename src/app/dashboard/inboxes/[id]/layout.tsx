@@ -5,9 +5,5 @@ export default async function InboxLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <div>
-      <Card className="p-5">{children}</Card>
-    </div>
-  )
+  return <Card className="h-full max-h-full p-5">{children}</Card>
 }

@@ -22,7 +22,7 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+    <div className="flex h-screen max-h-screen min-h-screen w-full flex-col bg-muted/40">
       <SideNav />
       <div className="flex h-full flex-grow flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
@@ -82,9 +82,9 @@ export default async function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <ScrollArea className="h-full w-full rounded-md border">
-          <main className="flex h-full w-full flex-grow flex-col pl-1 pr-1">
-            <div className="w-full flex-grow p-5">{children}</div>
+        <ScrollArea className="h-full max-h-full w-full rounded-md border">
+          <main className="flex h-full w-full flex-grow flex-col p-5">
+            {children}
           </main>
         </ScrollArea>
       </div>
