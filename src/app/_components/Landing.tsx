@@ -19,14 +19,6 @@ export async function Landing() {
           alt="email-example"
         />
         <p className="mt-8">This landing page is awesome, I know.</p>
-        <p>
-          Feel free to fork and deploy your own instances of Berny for personal
-          use. But please don&apos;t use it for any commercial purposes.
-        </p>
-        <p>
-          PS, Berny&apos;s MIT license was created by Copilot, so its
-          bulletproof. Good luck in court.
-        </p>
       </div>
 
       <footer className="py-4">
