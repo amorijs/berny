@@ -13,7 +13,7 @@ import {
 import { Separator } from '~/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { TooltipProvider } from '~/components/ui/tooltip'
-import { accounts, mails, type Mail } from './data'
+import { mails, type Mail } from './data'
 import { useMail } from './use-mail'
 import { AccountSwitcher } from './_components/account-switcher'
 import { Nav } from './_components/nav'
@@ -82,7 +82,7 @@ export default function Mail({
               isCollapsed ? 'h-[52px]' : 'px-2'
             )}
           >
-            <AccountSwitcher isCollapsed={isCollapsed} accounts={accounts} />
+            <AccountSwitcher isCollapsed={isCollapsed} />
           </div>
           <Separator />
           <Nav
