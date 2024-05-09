@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { client, qb } from '~/server/db/edge'
-import { GetMailForInboxOutputSchema, MailType } from './types'
+import { GetMailForInboxOutputSchema, type MailType } from './types'
 
 const mailslurp = new MailSlurp({
   apiKey: process.env.MAIL_SLURP_API_KEY!,
@@ -126,7 +126,7 @@ export const inboxRouter = createTRPCRouter({
 
   getMail: authedProcedure
     .input(z.object({ mailId: z.string() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       return mailslurp.getEmail(input.mailId)
     }),
 

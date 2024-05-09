@@ -36,7 +36,6 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip'
 import { addDays, addHours, format, nextSaturday } from 'date-fns'
-import { type MailType } from '~/server/api/routers/inbox/types'
 import { api } from '~/trpc/react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'

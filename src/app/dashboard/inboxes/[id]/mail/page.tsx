@@ -19,7 +19,7 @@ import { AccountSwitcher } from './_components/account-switcher'
 import { MailList } from './_components/MailList'
 import { useParams } from 'next/navigation'
 import { MailDisplay } from './_components/MailDisplay'
-import { Nav } from './_components/Nav'
+import { MailNav } from './_components/mailNav'
 
 const defaultLayout = [265, 440, 655]
 const defaultCollapsed = false
@@ -31,7 +31,7 @@ export default function Mail() {
 
   const id = Array.isArray(params.id) ? params.id[0] : params.id
 
-  const { data, isLoading, selected, error } = useMail(id)
+  const { data, selected } = useMail(id)
 
   const mails = data?.results ?? []
 
@@ -81,7 +81,7 @@ export default function Mail() {
             <AccountSwitcher isCollapsed={isCollapsed} />
           </div>
           <Separator />
-          <Nav
+          <MailNav
             isCollapsed={isCollapsed}
             links={[
               {

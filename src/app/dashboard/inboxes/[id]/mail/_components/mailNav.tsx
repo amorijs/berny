@@ -21,7 +21,7 @@ interface NavProps {
   }[]
 }
 
-export function Nav({ links, isCollapsed }: NavProps) {
+export function MailNav({ links, isCollapsed }: NavProps) {
   return (
     <div
       data-collapsed={isCollapsed}
