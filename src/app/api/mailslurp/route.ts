@@ -20,7 +20,7 @@ const headerHtml = (emailFrom: string, domains: string[]) => {
   }
 
   return `
-      <div style="background-color: #f8f9fa; padding: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;">
+      <div style="background-color: #0c0a09; color: #fff; padding: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;">
         <h2 style="margin-bottom: 20px;">Email Forwarded by Berny</h2>
         <p>This email was forwarded by Berny. You can view the <a href="https://example.com/original-message">original message</a> on our website.</p>
         <p>Email From: ${emailFrom}<p/>

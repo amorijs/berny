@@ -8,6 +8,7 @@ import {
   ReplyAll,
   Trash2,
 } from 'lucide-react'
+import { Letter } from 'react-letter'
 
 import {
   DropdownMenuContent,
@@ -91,6 +92,10 @@ export function MailDisplay({ mailId }: MailDisplayProps) {
       })
     },
   })
+
+  // const sanitizedBody = useMemo(() => {
+  //   return extract
+  // }, [mail?.body])
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     if (!mailId || !mail?.inboxId) {
@@ -268,12 +273,12 @@ export function MailDisplay({ mailId }: MailDisplayProps) {
             )}
           </div>
           <Separator />
-          <div
+          {/* <div
             className="flex-1 whitespace-pre-wrap p-4 text-sm"
             dangerouslySetInnerHTML={{ __html: mail.body ?? '' }}
           >
-            {/* {mail.body} */}
-          </div>
+          </div> */}
+          {mail.body && <Letter html={mail.body} />}
           <Separator className="mt-auto" />
           <div className="p-4">
             <Form {...form}>
