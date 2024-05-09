@@ -1,9 +1,10 @@
-import MailSlurp from 'mailslurp-client'
+import MailSlurp, { GetEmailsPaginatedSortEnum } from 'mailslurp-client'
 import { authedProcedure, createTRPCRouter } from '~/server/api/trpc'
 import { z } from 'zod'
 import { createRandomEmail } from './utils/createRandomEmail'
 import { TRPCError } from '@trpc/server'
 import { client, qb } from '~/server/db/edge'
+import { GetMailForInboxOutputSchema, MailType } from './types'
 
 const mailslurp = new MailSlurp({
   apiKey: process.env.MAIL_SLURP_API_KEY!,
@@ -121,5 +122,126 @@ export const inboxRouter = createTRPCRouter({
         .run(client)
 
       return userInboxData?.inboxes ?? []
+    }),
+
+  getMail: authedProcedure
+    .input(z.object({ mailId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      return mailslurp.getEmail(input.mailId)
+    }),
+
+  getMailForInbox: authedProcedure
+    .input(
+      z.object({
+        inboxId: z.string(),
+        page: z.number().default(0),
+        size: z.number().default(10),
+      })
+    )
+    .output(GetMailForInboxOutputSchema)
+    .query(async ({ input, ctx }) => {
+      const inbox = await qb
+        .select(qb.Inbox, () => ({
+          mailslurpInboxId: true,
+          user: { id: true },
+          filter_single: { id: input.inboxId },
+        }))
+        .run(client)
+
+      if (inbox?.user.id !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Inbox not found',
+        })
+      }
+
+      if (!inbox?.mailslurpInboxId) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Inbox not found',
+        })
+      }
+
+      const x = await mailslurp.emailController.getEmailsPaginated({
+        page: input.page,
+        size: input.size,
+        sort: GetEmailsPaginatedSortEnum.DESC,
+        inboxId: [inbox.mailslurpInboxId],
+      })
+
+      const results: MailType[] =
+        x?.content?.map(({ id, subject, from, read, createdAt }) => ({
+          id,
+          from: from ?? 'Unknown',
+          subject: subject ?? 'No subject',
+          read,
+          createdAt,
+        })) ?? []
+
+      return {
+        total: x.totalElements,
+        totalPages: x.totalPages,
+        page: x.pageable?.pageNumber ?? 0,
+        results,
+      }
+    }),
+
+  replyToMail: authedProcedure
+    .input(
+      z.object({
+        mailslurpInboxId: z.string(),
+        mailId: z.string(),
+        body: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const inbox = await qb
+        .select(qb.Inbox, () => ({
+          email: true,
+          mailslurpInboxId: true,
+          user: { id: true },
+          filter_single: { mailslurpInboxId: input.mailslurpInboxId },
+        }))
+        .run(client)
+
+      if (inbox?.user.id !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Inbox not found',
+        })
+      }
+
+      const emailToReplyTo = await mailslurp.getEmail(input.mailId)
+
+      if (
+        !emailToReplyTo ||
+        emailToReplyTo.inboxId !== inbox.mailslurpInboxId
+      ) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Email not found',
+        })
+      }
+
+      return mailslurp.emailController.replyToEmail({
+        emailId: input.mailId,
+        replyToEmailOptions: {
+          from: inbox.email,
+          replyTo: inbox.email,
+          body: input.body,
+          isHTML: true,
+        },
+      })
+    }),
+
+  markAsRead: authedProcedure
+    .input(z.object({ mailId: z.string() }))
+    .mutation(async ({ input }) => {
+      const x = await mailslurp.emailController.markAsRead({
+        emailId: input.mailId,
+        read: true,
+      })
+      console.log({ x })
+      return x
     }),
 })

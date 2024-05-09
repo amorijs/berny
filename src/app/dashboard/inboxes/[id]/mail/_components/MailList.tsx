@@ -1,18 +1,19 @@
 import { type ComponentProps } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 
-import { Badge } from '~/components/ui/badge'
+import { type Badge } from '~/components/ui/badge'
 import { ScrollArea } from '~/components/ui/scroll-area'
-import { type Mail } from '../data'
-import { useMail } from '../use-mail'
+import { selectedAtom } from '../useMail'
 import { cn } from '~/lib/utils'
+import { type MailType } from '~/server/api/routers/inbox/types'
+import { useAtom } from 'jotai'
 
 interface MailListProps {
-  items: Mail[]
+  items: MailType[]
 }
 
 export function MailList({ items }: MailListProps) {
-  const [mail, setMail] = useMail()
+  const [selected, setSelected] = useAtom(selectedAtom)
 
   return (
     <ScrollArea className="h-screen">
@@ -22,19 +23,14 @@ export function MailList({ items }: MailListProps) {
             key={item.id}
             className={cn(
               'flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent',
-              mail.selected === item.id && 'bg-muted'
+              selected === item.id && 'bg-muted'
             )}
-            onClick={() =>
-              setMail({
-                ...mail,
-                selected: item.id,
-              })
-            }
+            onClick={() => setSelected(item.id)}
           >
             <div className="flex w-full flex-col gap-1">
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold">{item.name}</div>
+                  <div className="font-semibold">{item.from}</div>
                   {!item.read && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )}
@@ -42,22 +38,22 @@ export function MailList({ items }: MailListProps) {
                 <div
                   className={cn(
                     'ml-auto text-xs',
-                    mail.selected === item.id
+                    selected === item.id
                       ? 'text-foreground'
                       : 'text-muted-foreground'
                   )}
                 >
-                  {formatDistanceToNow(new Date(item.date), {
+                  {formatDistanceToNow(item.createdAt, {
                     addSuffix: true,
                   })}
                 </div>
               </div>
               <div className="text-xs font-medium">{item.subject}</div>
             </div>
-            <div className="line-clamp-2 text-xs text-muted-foreground">
+            {/* <div className="line-clamp-2 text-xs text-muted-foreground">
               {item.text.substring(0, 300)}
-            </div>
-            {item.labels.length ? (
+            </div> */}
+            {/* {item.labels.length ? (
               <div className="flex items-center gap-2">
                 {item.labels.map((label) => (
                   <Badge key={label} variant={getBadgeVariantFromLabel(label)}>
@@ -65,7 +61,7 @@ export function MailList({ items }: MailListProps) {
                   </Badge>
                 ))}
               </div>
-            ) : null}
+            ) : null} */}
           </button>
         ))}
       </div>

@@ -13,12 +13,13 @@ import {
 import { Separator } from '~/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { TooltipProvider } from '~/components/ui/tooltip'
-import { mails, type Mail } from './data'
-import { useMail } from './use-mail'
+import { type Mail } from './data'
+import { useMail } from './useMail'
 import { AccountSwitcher } from './_components/account-switcher'
+import { MailList } from './_components/MailList'
+import { useParams } from 'next/navigation'
+import { MailDisplay } from './_components/MailDisplay'
 import { Nav } from './_components/nav'
-import { MailList } from './_components/mail-list'
-import { MailDisplay } from './_components/mail-display'
 
 const defaultLayout = [265, 440, 655]
 const defaultCollapsed = false
@@ -26,7 +27,24 @@ const navCollapsedSize = 4
 
 export default function Mail() {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
-  const [mail] = useMail()
+  const params = useParams()
+
+  const id = Array.isArray(params.id) ? params.id[0] : params.id
+
+  const { data, isLoading, selected, error } = useMail(id)
+
+  // console.log({ id, data, isLoading, error })
+
+  const mails = data?.results ?? []
+
+  console.log({ mails })
+
+  const handleCollapseChange = (collapsed: boolean) => {
+    setIsCollapsed(collapsed)
+    document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
+      collapsed
+    )}`
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -45,14 +63,8 @@ export default function Mail() {
           collapsible={true}
           minSize={15}
           maxSize={20}
-          onCollapse={() => {
-            setIsCollapsed((s) => {
-              document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                !s
-              )}`
-              return !s
-            })
-          }}
+          onCollapse={() => handleCollapseChange(true)}
+          onExpand={() => handleCollapseChange(false)}
           // onCollapse={(collapsed: boolean) => {
           //   setIsCollapsed(collapsed)
           //   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
@@ -181,18 +193,19 @@ export default function Mail() {
               </form>
             </div>
             <TabsContent value="all" className="m-0">
-              <MailList items={mails} />
+              <MailList items={mails ?? []} />
             </TabsContent>
             <TabsContent value="unread" className="m-0">
-              <MailList items={mails.filter((item) => !item.read)} />
+              <MailList items={mails.filter((item) => !item.read) ?? []} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={defaultLayout[2]}>
           <MailDisplay
-            mail={mails.find((item) => item.id === mail.selected) ?? null}
+            mailId={mails.find((item) => item.id === selected)?.id ?? null}
           />
+          <div>Mail display!</div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </TooltipProvider>

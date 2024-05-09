@@ -30,14 +30,14 @@ export default function DashboardBreadcrumbs() {
     <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
         {items.map((item, index) => (
-          <>
-            <BreadcrumbItem key={item.name}>
+          <div key={item.name}>
+            <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link href={item.href}>{item.name}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             {index < items.length - 1 && <BreadcrumbSeparator />}
-          </>
+          </div>
         ))}
 
         {/* <BreadcrumbItem>

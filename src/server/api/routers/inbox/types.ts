@@ -35,7 +35,23 @@ export const WebhookNewEmailPayloadSchema = z.object({
   subject: z.string().optional(),
   attachmentMetaDatas: z.array(AttachmentMetaDataSchema),
 })
-
 export type WebhookNewEmailPayloadType = z.infer<
   typeof WebhookNewEmailPayloadSchema
 >
+
+export const MailSchema = z.object({
+  id: z.string(),
+  from: z.string(),
+  subject: z.string(),
+  read: z.boolean(),
+  createdAt: z.date(),
+})
+export type MailType = z.infer<typeof MailSchema>
+
+export const GetMailForInboxOutputSchema = z.object({
+  total: z.number(),
+  page: z.number(),
+  totalPages: z.number(),
+  results: z.array(MailSchema),
+})
+export type GetMailForInboxType = z.infer<typeof GetMailForInboxOutputSchema>
