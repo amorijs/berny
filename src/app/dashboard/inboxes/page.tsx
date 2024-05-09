@@ -49,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const FormSchema = z.object({
   website: z.string().min(5, {
@@ -64,6 +65,8 @@ export default function Inboxes() {
     id: string
     email: string
   } | null>(null)
+
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -119,6 +122,10 @@ export default function Inboxes() {
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     createInbox({ domain: data.website })
+  }
+
+  const onInboxClick = (inboxId: string) => {
+    router.push(`/dashboard/inboxes/${inboxId}/mail`)
   }
 
   return (
@@ -218,7 +225,11 @@ export default function Inboxes() {
             </TableHeader>
             <TableBody>
               {inboxes?.map((inbox) => (
-                <TableRow className="cursor-pointer" key={inbox.id}>
+                <TableRow
+                  onClick={() => onInboxClick(inbox.id)}
+                  className="cursor-pointer"
+                  key={inbox.id}
+                >
                   <TableCell className="hidden md:table-cell">
                     {inbox.domains[0]?.name}
                   </TableCell>
