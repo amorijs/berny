@@ -92,11 +92,11 @@ export async function POST(request: Request) {
 
     // Get the mailslurp inbox
     console.log('Fetching inbox...')
-    const inbox = await mailslurp.getInbox(inboxData.mailslurpInboxId)
-    console.log({ inbox })
+    const mailslurpInbox = await mailslurp.getInbox(inboxData.mailslurpInboxId)
+    console.log({ mailslurpInbox })
 
     const outgoingEmailHeader = headerHtml(
-      inbox.id,
+      inboxData.id,
       incomingEmailData.id,
       incomingEmailData.from ?? 'unknown',
       [inboxData.domains[0]?.name ?? 'unknown']
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
 
     // Send the email
     console.log('Sending email...')
-    await mailslurp.sendEmail(inbox.id, options)
+    await mailslurp.sendEmail(mailslurpInbox.id, options)
     console.log('Email sent!')
   })
 
