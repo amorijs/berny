@@ -27,7 +27,7 @@ const headerHtml = (
   return `
       <div style="background-color: #171513; color: #fff; padding: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;">
         <h2 style="margin-bottom: 20px;">Email Forwarded by Berny</h2>
-        <p>This email was forwarded by Berny. You can view the <a href="https://berny.io/${inboxId}/mail/${mailId}">original message</a> on our website.</p>
+        <p>This email was forwarded by Berny. You can view the <a href="https://berny.io/dashboard/inboxes/${inboxId}/${mailId}">original message</a> on our website.</p>
         <p>Email From: ${emailFrom}<p/>
         <p>Reply to this email to respond to the original sender.</p>
         <p>You gave this email to ${domainsString}
