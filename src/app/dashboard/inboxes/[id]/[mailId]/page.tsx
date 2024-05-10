@@ -30,8 +30,11 @@ export default function Mail() {
   const params = useParams()
 
   const id = Array.isArray(params.id) ? params.id[0] : params.id
+  const selected = Array.isArray(params.mailId)
+    ? params.mailId[0]
+    : params.mailId
 
-  const { data, selected } = useMail(id)
+  const { data } = useMail(id)
 
   const mails = data?.results ?? []
 
@@ -189,10 +192,13 @@ export default function Mail() {
               </form>
             </div>
             <TabsContent value="all" className="m-0">
-              <MailList items={mails ?? []} />
+              <MailList inboxId={id} items={mails ?? []} />
             </TabsContent>
             <TabsContent value="unread" className="m-0">
-              <MailList items={mails.filter((item) => !item.read) ?? []} />
+              <MailList
+                inboxId={id}
+                items={mails.filter((item) => !item.read) ?? []}
+              />
             </TabsContent>
           </Tabs>
         </ResizablePanel>

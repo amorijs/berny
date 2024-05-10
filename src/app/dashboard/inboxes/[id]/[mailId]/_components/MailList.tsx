@@ -1,19 +1,17 @@
-import { type ComponentProps } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 
-import { type Badge } from '~/components/ui/badge'
 import { ScrollArea } from '~/components/ui/scroll-area'
-import { selectedAtom } from '../useMail'
+import { useMail } from '../useMail'
 import { cn } from '~/lib/utils'
 import { type MailType } from '~/server/api/routers/inbox/types'
-import { useAtom } from 'jotai'
 
 interface MailListProps {
+  inboxId: string | undefined | null
   items: MailType[]
 }
 
-export function MailList({ items }: MailListProps) {
-  const [selected, setSelected] = useAtom(selectedAtom)
+export function MailList({ inboxId, items }: MailListProps) {
+  const { selected, setSelected } = useMail(inboxId)
 
   return (
     <ScrollArea className="h-screen">

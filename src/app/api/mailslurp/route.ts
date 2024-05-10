@@ -8,7 +8,12 @@ const mailslurp = new MailSlurp({
   apiKey: process.env.MAIL_SLURP_API_KEY!,
 })
 
-const headerHtml = (emailFrom: string, domains: string[]) => {
+const headerHtml = (
+  inboxId: string,
+  mailId: string,
+  emailFrom: string,
+  domains: string[]
+) => {
   let domainsString = ''
 
   if (domains.length <= 2) {
@@ -22,10 +27,10 @@ const headerHtml = (emailFrom: string, domains: string[]) => {
   return `
       <div style="background-color: #171513; color: #fff; padding: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;">
         <h2 style="margin-bottom: 20px;">Email Forwarded by Berny</h2>
-        <p>This email was forwarded by Berny. You can view the <a href="https://example.com/original-message">original message</a> on our website.</p>
+        <p>This email was forwarded by Berny. You can view the <a href="https://berny.io/${inboxId}/mail/${mailId}">original message</a> on our website.</p>
         <p>Email From: ${emailFrom}<p/>
         <p>Reply to this email to respond to the original sender.</p>
-        <p>Domains that you gave this email to: ${domainsString} | <a href="#">View all</a></p>
+        <p>You gave this email to ${domainsString}
         <p>Thanks, Berny</p>
         <hr>
       </div>
@@ -91,6 +96,8 @@ export async function POST(request: Request) {
     console.log({ inbox })
 
     const outgoingEmailHeader = headerHtml(
+      inbox.id,
+      incomingEmailData.id,
       incomingEmailData.from ?? 'unknown',
       [inboxData.domains[0]?.name ?? 'unknown']
     )
