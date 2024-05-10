@@ -42,6 +42,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormMessage } from '~/components/ui/form'
 import { toast } from '~/components/ui/use-toast'
+import { ScrollArea } from '~/components/ui/scroll-area'
 
 interface MailDisplayProps {
   mailId: string | null
@@ -245,7 +246,7 @@ export function MailDisplay({ mailId }: MailDisplayProps) {
       </div>
       <Separator />
       {mail ? (
-        <div className="flex flex-1 flex-col">
+        <div className="flex h-full flex-1 flex-col">
           <div className="flex items-start p-4">
             <div className="flex items-start gap-4 text-sm">
               <Avatar>
@@ -277,46 +278,54 @@ export function MailDisplay({ mailId }: MailDisplayProps) {
             dangerouslySetInnerHTML={{ __html: mail.body ?? '' }}
           >
           </div> */}
-          {mail.body && <Letter html={mail.body} />}
-          <Separator className="mt-auto" />
-          <div className="p-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
-                <FormField
-                  control={form.control}
-                  name="body"
-                  render={({ field }) => (
-                    <div className="grid gap-4">
-                      <FormControl>
-                        <Textarea
-                          className="p-4"
-                          placeholder={`Reply...`}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                      <div className="flex items-center">
-                        <Label
-                          htmlFor="mute"
-                          className="flex items-center gap-2 text-xs font-normal"
-                        >
-                          <Switch id="mute" aria-label="Mute thread" /> Mute
-                          this thread
-                        </Label>
-                        <Button
-                          disabled={isPending || !mailLoaded}
-                          size="sm"
-                          className="ml-auto"
-                          type="submit"
-                        >
-                          Send
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                />
-              </form>
-            </Form>
+          <div className="flex h-full flex-col">
+            {mail.body && (
+              <ScrollArea className="flex-grow overflow-y-auto p-5">
+                <Letter className="max-h-1" html={mail.body} />
+              </ScrollArea>
+            )}
+            <div className="flex-shrink-0">
+              <Separator className="mt-auto" />
+              <div className="p-4">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <FormField
+                      control={form.control}
+                      name="body"
+                      render={({ field }) => (
+                        <div className="grid gap-4">
+                          <FormControl>
+                            <Textarea
+                              className="p-4"
+                              placeholder={`Reply...`}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <div className="flex items-center">
+                            <Label
+                              htmlFor="mute"
+                              className="flex items-center gap-2 text-xs font-normal"
+                            >
+                              <Switch id="mute" aria-label="Mute thread" /> Mute
+                              this thread
+                            </Label>
+                            <Button
+                              disabled={isPending || !mailLoaded}
+                              size="sm"
+                              className="ml-auto"
+                              type="submit"
+                            >
+                              Send
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </form>
+                </Form>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
