@@ -25,14 +25,13 @@ const headerHtml = (
   }
 
   return `
-      <div style="background-color: #171513; color: #fff; padding: 20px; margin-bottom: 20px; border-bottom: 1px solid #e9ecef;">
+      <div style="background-color: #171513; color: #fff; padding: 20px; margin-bottom: 20px; font-size: 12px; width: 500px;">
         <h2 style="margin-bottom: 20px;">Email Forwarded by Berny</h2>
-        <p>This email was forwarded by Berny. You can view the <a href="https://berny.io/dashboard/inboxes/${inboxId}/${mailId}">original message</a> on our website.</p>
+        <p>This email was forwarded by Berny. View <a href="https://berny.io/dashboard/inboxes/${inboxId}/${mailId}">original message</a></p>
         <p>Email From: ${emailFrom}<p/>
-        <p>Reply to this email to respond to the original sender.</p>
-        <p>You gave this email to ${domainsString}
+        <p>You can reply directly to this email to respond to the sender.</p>
+        <p>You originally gave this email address to ${domainsString}
         <p>Thanks, Berny</p>
-        <hr>
       </div>
     `
 }
