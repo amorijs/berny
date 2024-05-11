@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   const payload = (await request.json()) as WebhookNewEmailPayload
   const incomingEmailData = await mailslurp.getEmail(payload.emailId)
 
-  const emailFrom = incomingEmailData.from?.[0]
+  const emailFrom = incomingEmailData.from
   const emailTo = incomingEmailData.to[0]
 
   if (!emailTo || !emailFrom) {
