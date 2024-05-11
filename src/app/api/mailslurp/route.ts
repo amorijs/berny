@@ -115,7 +115,8 @@ export async function POST(request: Request) {
 
   // Create a new reply client for this external email
   const replyClientInsert = qb.insert(qb.ReplyClient, {
-    email: (await mailslurp.createInbox()).emailAddress,
+    email: (await mailslurp.createInbox(`"${emailFrom}"@berny.io`))
+      .emailAddress,
     externalEmail: emailFrom,
     userInbox: inboxQuery,
   })

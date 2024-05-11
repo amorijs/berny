@@ -18,7 +18,7 @@ export const inboxRouter = createTRPCRouter({
 
       const mailslurpInbox = await mailslurp.inboxController.createInbox({
         name: newEmail,
-        emailAddress: newEmail + '@mailslurp.net',
+        emailAddress: newEmail + '@berny.io',
       })
 
       // User query expression
