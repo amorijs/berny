@@ -60,7 +60,11 @@ export async function POST(request: Request) {
     .select(qb.ReplyClient, () => ({
       email: true,
       externalEmail: true,
-      userInbox: { email: true, user: { email: true } },
+      userInbox: {
+        email: true,
+        mailslurpInboxId: true,
+        user: { email: true },
+      },
       filter_single: { email: emailTo },
     }))
     .run(client)
@@ -76,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     console.log('User reply...')
-    await mailslurp.sendEmail(replyClient.userInbox.email, {
+    await mailslurp.sendEmail(replyClient.userInbox.mailslurpInboxId, {
       to: [replyClient.externalEmail],
       from: replyClient.userInbox.email,
       subject: incomingEmailData.subject ?? 'No Subject',
