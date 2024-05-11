@@ -102,12 +102,15 @@ export async function POST(request: Request) {
   }
 
   // Create a new reply client for this external email
-  await qb
-    .insert(qb.ReplyClient, {
-      email: (await mailslurp.createInbox()).emailAddress,
-      externalEmail: emailFrom,
-      userInbox: inboxQuery,
-    })
+  const replyClientInsert = qb.insert(qb.ReplyClient, {
+    email: (await mailslurp.createInbox()).emailAddress,
+    externalEmail: emailFrom,
+    userInbox: inboxQuery,
+  })
+  const newReplyClient = await qb
+    .select(replyClientInsert, () => ({
+      email: true,
+    }))
     .run(client)
 
   // Get the mailslurp inbox
@@ -131,7 +134,8 @@ export async function POST(request: Request) {
   // Build the email options for mailslurp
   const options: SendEmailOptions = {
     to: [inboxData.user.email],
-    from: inboxData.email,
+    from: newReplyClient.email,
+    replyTo: newReplyClient.email,
     subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
     body: outgoingEmailCompleteBody,
     isHTML: true,
