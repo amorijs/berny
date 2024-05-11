@@ -67,7 +67,11 @@ export async function POST(request: Request) {
 
   if (replyClient) {
     if (replyClient.userInbox.email !== incomingEmailData.from) {
-      console.log('Email not from user, skipping...')
+      console.log(
+        'Email not from user, skipping...',
+        replyClient.userInbox.email,
+        incomingEmailData.from
+      )
       return
     }
 
@@ -81,7 +85,7 @@ export async function POST(request: Request) {
       attachments: incomingEmailData.attachments,
     })
     console.log('Email sent!')
-    return
+    return Response.json({ message: 'OK' })
   }
 
   // If we get here, it means the email is being sent to a user inbox, from an external source (ie from help@washingtonpost.com)
