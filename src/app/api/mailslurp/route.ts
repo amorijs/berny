@@ -115,8 +115,11 @@ export async function POST(request: Request) {
 
   // Create a new reply client for this external email
   const replyClientInsert = qb.insert(qb.ReplyClient, {
+    // Need to figure out a better way to make these emails unique
     email: (
-      await mailslurp.createInbox(`${emailFrom.replace('@', '_at_')}@berny.io`)
+      await mailslurp.createInbox(
+        `${emailFrom.replace('@', '_at_')}_${inboxData.mailslurpInboxId.split('-')[0]}@berny.io`
+      )
     ).emailAddress,
     externalEmail: emailFrom,
     userInbox: inboxQuery,
