@@ -26,8 +26,10 @@ export type $InboxλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c
   "user": $.LinkDesc<$User, $.Cardinality.One, {}, false, false,  false, false>;
   "<inbox[is Domain]": $.LinkDesc<$Domain, $.Cardinality.Many, {}, false, false,  false, false>;
   "<inboxes[is User]": $.LinkDesc<$User, $.Cardinality.Many, {}, false, false,  false, false>;
+  "<userInbox[is ReplyClient]": $.LinkDesc<$ReplyClient, $.Cardinality.Many, {}, false, false,  false, false>;
   "<inbox": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
   "<inboxes": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
+  "<userInbox": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
 }>;
 type $Inbox = $.ObjectType<"default::Inbox", $InboxλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
@@ -37,6 +39,19 @@ type $Inbox = $.ObjectType<"default::Inbox", $InboxλShape, null, [
 const $Inbox = $.makeType<$Inbox>(_.spec, "950ddd8d-0a9c-11ef-8188-6b8a6dc951b2", _.syntax.literal);
 
 const Inbox: $.$expr_PathNode<$.TypeSet<$Inbox, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($Inbox, $.Cardinality.Many), null);
+
+export type $ReplyClientλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588λShape & {
+  "email": $.PropertyDesc<_std.$str, $.Cardinality.One, true, false, false, false>;
+  "externalEmail": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
+  "userInbox": $.LinkDesc<$Inbox, $.Cardinality.One, {}, false, false,  false, false>;
+}>;
+type $ReplyClient = $.ObjectType<"default::ReplyClient", $ReplyClientλShape, null, [
+  ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
+  {email: {__element__: _std.$str, __cardinality__: $.Cardinality.One | $.Cardinality.AtMostOne },},
+]>;
+const $ReplyClient = $.makeType<$ReplyClient>(_.spec, "50d3ee63-0f1f-11ef-aa4c-63d7cfa3fcf4", _.syntax.literal);
+
+const ReplyClient: $.$expr_PathNode<$.TypeSet<$ReplyClient, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($ReplyClient, $.Cardinality.Many), null);
 
 export type $UserλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588λShape & {
   "email": $.PropertyDesc<_std.$str, $.Cardinality.One, true, false, false, false>;
@@ -57,16 +72,18 @@ const User: $.$expr_PathNode<$.TypeSet<$User, $.Cardinality.Many>, null> = _.syn
 
 
 
-export { $Domain, Domain, $Inbox, Inbox, $User, User };
+export { $Domain, Domain, $Inbox, Inbox, $ReplyClient, ReplyClient, $User, User };
 
 type __defaultExports = {
   "Domain": typeof Domain;
   "Inbox": typeof Inbox;
+  "ReplyClient": typeof ReplyClient;
   "User": typeof User
 };
 const __defaultExports: __defaultExports = {
   "Domain": Domain,
   "Inbox": Inbox,
+  "ReplyClient": ReplyClient,
   "User": User
 };
 export default __defaultExports;

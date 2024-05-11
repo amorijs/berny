@@ -1,3 +1,10 @@
+/**
+ * @todo: handle multiple to addresses
+ * @todo: handle multiple from addresses
+ * @todo: persist reply chain
+ * @todo: possibly sanitize email body to remove header
+ */
+
 import MailSlurp, {
   type SendEmailOptions,
   type WebhookNewEmailPayload,
@@ -36,93 +43,106 @@ const headerHtml = (
     `
 }
 
-const tempCache: Record<string, boolean> = {}
-
 export async function POST(request: Request) {
-  const incomingEmailPayload = (await request.json()) as WebhookNewEmailPayload
-  console.log({ incomingEmailPayload })
-  const bernyInboxEmails = incomingEmailPayload.to
+  const payload = (await request.json()) as WebhookNewEmailPayload
+  const incomingEmailData = await mailslurp.getEmail(payload.emailId)
 
-  // Reroute the email to the primary email
-  const reroutePromises = bernyInboxEmails.map(async (bernyInboxEmail) => {
-    // Get the inbox data
-    console.log('Fetching inbox...')
-    const inboxData = await qb
-      .select(qb.Inbox, () => ({
-        id: true,
-        email: true,
-        mailslurpInboxId: true,
-        user: {
-          email: true,
-        },
-        domains: {
-          name: true,
-        },
-        filter_single: { email: bernyInboxEmail },
-      }))
-      .run(client)
-    console.log({ inbox: inboxData })
+  const emailFrom = incomingEmailData.from?.[0]
+  const emailTo = incomingEmailData.to[0]
 
-    if (!inboxData) {
-      throw new Error('Inbox not found')
+  if (!emailTo || !emailFrom) {
+    console.log('Email missing to or from, skipping...', { emailTo, emailFrom })
+    return
+  }
+
+  // First check if this email is being sent to a replyClient email
+  const replyClient = await qb
+    .select(qb.ReplyClient, () => ({
+      email: true,
+      externalEmail: true,
+      userInbox: { email: true },
+      filter_single: { email: emailTo },
+    }))
+    .run(client)
+
+  if (replyClient) {
+    if (replyClient.userInbox.email !== incomingEmailData.from) {
+      console.log('Email not from user, skipping...')
+      return
     }
 
-    // if (userData.email === incomingEmailPayload.from) {
-    // // This is a reply to an email that was sent from Berny
-    // return
-    // }
-
-    // Get the mailslurp email that was received
-    console.log('Fetching email data...')
-    const incomingEmailData = await mailslurp.getEmail(
-      incomingEmailPayload.emailId
-    )
-    console.log({ incomingEmailData })
-
-    if (inboxData.user.email === incomingEmailPayload.from) {
-      if (tempCache[inboxData.user.email + inboxData.email]) {
-        console.log('skipping email')
-        return
-      } else {
-        tempCache[inboxData.user.email + inboxData.email] = true
-      }
-      // This is a reply to an email that was sent from Berny
-    }
-
-    // Get the mailslurp inbox
-    console.log('Fetching inbox...')
-    const mailslurpInbox = await mailslurp.getInbox(inboxData.mailslurpInboxId)
-    console.log({ mailslurpInbox })
-
-    const outgoingEmailHeader = headerHtml(
-      inboxData.id,
-      incomingEmailData.id,
-      incomingEmailData.from ?? 'unknown',
-      [inboxData.domains[0]?.name ?? 'unknown']
-    )
-    // Format the email body if it's not HTML (plain text)
-    const outgoingEmailBody = incomingEmailData.isHTML
-      ? incomingEmailData.body
-      : `<div>${incomingEmailData.body}</div>`
-    const outgoingEmailCompleteBody = outgoingEmailHeader + outgoingEmailBody
-
-    // Build the email options for mailslurp
-    const options: SendEmailOptions = {
-      to: [inboxData.user.email],
-      from: inboxData.email,
-      subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
-      body: outgoingEmailCompleteBody,
-      isHTML: true,
+    console.log('User reply...')
+    await mailslurp.sendEmail(replyClient.userInbox.email, {
+      to: [replyClient.externalEmail],
+      from: replyClient.userInbox.email,
+      subject: incomingEmailData.subject ?? 'No Subject',
+      body: incomingEmailData.body,
+      isHTML: incomingEmailData.isHTML,
       attachments: incomingEmailData.attachments,
-    }
-
-    // Send the email
-    console.log('Sending email...')
-    await mailslurp.sendEmail(mailslurpInbox.id, options)
+    })
     console.log('Email sent!')
-  })
+    return
+  }
 
-  await Promise.all(reroutePromises)
+  // If we get here, it means the email is being sent to a user inbox, from an external source (ie from help@washingtonpost.com)
+  console.log('Fetching inbox...')
+  const inboxQuery = qb.select(qb.Inbox, () => ({
+    id: true,
+    email: true,
+    mailslurpInboxId: true,
+    user: { email: true },
+    domains: { name: true },
+    filter_single: { email: emailTo },
+  }))
+  const inboxData = await inboxQuery.run(client)
+  console.log({ inbox: inboxData })
+
+  if (!inboxData) {
+    throw new Error('Inbox not found')
+  }
+
+  // Create a new reply client for this external email
+  await qb
+    .insert(qb.ReplyClient, {
+      email: (await mailslurp.createInbox()).emailAddress,
+      externalEmail: emailFrom,
+      userInbox: inboxQuery,
+    })
+    .run(client)
+
+  // Get the mailslurp inbox
+  console.log('Fetching mailslurp inbox...')
+  const mailslurpInbox = await mailslurp.getInbox(inboxData.mailslurpInboxId)
+  console.log({ mailslurpInbox })
+
+  const outgoingEmailHeader = headerHtml(
+    inboxData.id,
+    incomingEmailData.id,
+    incomingEmailData.from ?? 'unknown',
+    [inboxData.domains[0]?.name ?? 'unknown']
+  )
+
+  // Format the email body if it's not HTML (plain text)
+  const outgoingEmailBody = incomingEmailData.isHTML
+    ? incomingEmailData.body
+    : `<div>${incomingEmailData.body}</div>`
+  const outgoingEmailCompleteBody = outgoingEmailHeader + outgoingEmailBody
+
+  // Build the email options for mailslurp
+  const options: SendEmailOptions = {
+    to: [inboxData.user.email],
+    from: inboxData.email,
+    subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
+    body: outgoingEmailCompleteBody,
+    isHTML: true,
+    attachments: incomingEmailData.attachments,
+  }
+
+  // Send the email
+  console.log('Sending email...')
+  await mailslurp.sendEmail(mailslurpInbox.id, options)
+  console.log('Email sent!')
+
   return Response.json({ message: 'OK' })
 }
 

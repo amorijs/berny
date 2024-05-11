@@ -42,4 +42,12 @@ module default {
         readonly := true;
     };
   }
+
+  type ReplyClient {
+    required email: str {
+      constraint exclusive;
+    };
+    required externalEmail: str;
+    required single userInbox: Inbox;
+  }
 };

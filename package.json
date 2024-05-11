@@ -10,7 +10,11 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "generate-types": "bunx @edgedb/generate edgeql-js"
+    "migration:create": "edgedb migration create",
+    "migration:create:prod": "edgedb migration create -I amorijs/berny",
+    "migrate": "edgedb migrate",
+    "migrate:prod": "edgedb migrate -I amorijs/berny",
+    "generate-types": "npx @edgedb/generate edgeql-js"
   },
   "dependencies": {
     "@clerk/nextjs": "^5.0.3",
