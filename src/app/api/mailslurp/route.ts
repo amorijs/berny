@@ -60,16 +60,16 @@ export async function POST(request: Request) {
     .select(qb.ReplyClient, () => ({
       email: true,
       externalEmail: true,
-      userInbox: { email: true },
+      userInbox: { email: true, user: { email: true } },
       filter_single: { email: emailTo },
     }))
     .run(client)
 
   if (replyClient) {
-    if (replyClient.userInbox.email !== incomingEmailData.from) {
+    if (replyClient.userInbox.user.email !== incomingEmailData.from) {
       console.log(
         'Email not from user, skipping...',
-        replyClient.userInbox.email,
+        replyClient.userInbox.user.email,
         incomingEmailData.from
       )
       return
