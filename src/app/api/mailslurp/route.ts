@@ -46,6 +46,10 @@ const headerHtml = (
 export async function POST(request: Request) {
   const payload = (await request.json()) as WebhookNewEmailPayload
   const incomingEmailData = await mailslurp.getEmail(payload.emailId)
+  await mailslurp.emailController.markAsRead({
+    read: false,
+    emailId: incomingEmailData.id,
+  })
 
   const emailFrom = incomingEmailData.from
   const emailTo = incomingEmailData.to[0]
