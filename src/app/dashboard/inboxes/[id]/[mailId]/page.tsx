@@ -15,11 +15,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs'
 import { TooltipProvider } from '~/components/ui/tooltip'
 import { type Mail } from './data'
 import { useMail } from './useMail'
-import { AccountSwitcher } from './_components/account-switcher'
+import { InboxSwitcher } from './_components/InboxSwitcher'
 import { MailList } from './_components/MailList'
 import { useParams } from 'next/navigation'
 import { MailDisplay } from './_components/MailDisplay'
 import { MailNav } from './_components/mailNav'
+import { useInbox } from './useInbox'
 
 const defaultLayout = [265, 440, 655]
 const defaultCollapsed = false
@@ -34,9 +35,10 @@ export default function Mail() {
     ? params.mailId[0]
     : params.mailId
 
-  const { data } = useMail(id)
+  const { mail } = useMail(id)
+  const { inbox } = useInbox(id)
 
-  const mails = data?.results ?? []
+  const mails = mail?.results ?? []
 
   const handleCollapseChange = (collapsed: boolean) => {
     setIsCollapsed(collapsed)
@@ -77,11 +79,11 @@ export default function Mail() {
         >
           <div
             className={cn(
-              'flex h-[52px] items-center justify-center',
+              'flex items-center justify-center pb-1.5',
               isCollapsed ? 'h-[52px]' : 'px-2'
             )}
           >
-            <AccountSwitcher isCollapsed={isCollapsed} />
+            <InboxSwitcher currentInbox={inbox} />
           </div>
           <Separator />
           <MailNav

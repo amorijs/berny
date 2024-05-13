@@ -124,6 +124,30 @@ export const inboxRouter = createTRPCRouter({
       return userInboxData?.inboxes ?? []
     }),
 
+  getInbox: authedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const inbox = await qb
+        .select(qb.Inbox, () => ({
+          id: true,
+          email: true,
+          mailslurpInboxId: true,
+          domains: { name: true },
+          user: { id: true },
+          filter_single: { id: input.id },
+        }))
+        .run(client)
+
+      if (!inbox || inbox?.user.id !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Inbox not found',
+        })
+      }
+
+      return inbox
+    }),
+
   getMail: authedProcedure
     .input(z.object({ mailId: z.string() }))
     .query(async ({ input }) => {

@@ -27,10 +27,10 @@ export default function DashboardBreadcrumbs() {
     .filter((el) => el)
 
   return (
-    <Breadcrumb className="hidden md:flex">
+    <Breadcrumb className="hidden h-full items-end md:flex">
       <BreadcrumbList>
         {items.map((item, index) => (
-          <div key={item.name}>
+          <div className="ml-[-5px] flex items-center gap-1" key={item.name}>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
                 <Link href={item.href}>{item.name}</Link>

@@ -82,8 +82,8 @@ export default async function DashboardLayout({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <ScrollArea className="h-full max-h-full w-full rounded-md border">
-          <main className="flex h-full w-full flex-grow flex-col p-5">
+        <ScrollArea className="h-full max-h-full w-full p-3 pt-0">
+          <main className="flex h-full w-full flex-grow flex-col">
             {children}
           </main>
         </ScrollArea>

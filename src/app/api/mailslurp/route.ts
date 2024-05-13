@@ -6,6 +6,7 @@
  */
 
 import MailSlurp, {
+  Email,
   type SendEmailOptions,
   type WebhookNewEmailPayload,
 } from 'mailslurp-client'
@@ -43,23 +44,9 @@ const headerHtml = (
     `
 }
 
-export async function POST(request: Request) {
-  const payload = (await request.json()) as WebhookNewEmailPayload
-  const incomingEmailData = await mailslurp.getEmail(payload.emailId)
-  await mailslurp.emailController.markAsRead({
-    read: false,
-    emailId: incomingEmailData.id,
-  })
+const handleEmailSentToReplyClient = async (emailData: Email) => {
+  const emailTo = emailData.to[0]!
 
-  const emailFrom = incomingEmailData.from
-  const emailTo = incomingEmailData.to[0]
-
-  if (!emailTo || !emailFrom) {
-    console.log('Email missing to or from, skipping...', { emailTo, emailFrom })
-    return
-  }
-
-  // First check if this email is being sent to a replyClient email
   const replyClient = await qb
     .select(qb.ReplyClient, () => ({
       email: true,
@@ -73,30 +60,36 @@ export async function POST(request: Request) {
     }))
     .run(client)
 
-  if (replyClient) {
-    if (replyClient.userInbox.user.email !== incomingEmailData.from) {
-      console.log(
-        'Email not from user, skipping...',
-        replyClient.userInbox.user.email,
-        incomingEmailData.from
-      )
-      return
-    }
+  if (!replyClient) {
+    return false
+  }
 
-    console.log('User reply...')
+  if (replyClient.userInbox.user.email === emailData.from) {
+    console.log('User reply from 3rd party app...')
     await mailslurp.sendEmail(replyClient.userInbox.mailslurpInboxId, {
       to: [replyClient.externalEmail],
       from: replyClient.userInbox.email,
-      subject: incomingEmailData.subject ?? 'No Subject',
-      body: incomingEmailData.body,
-      isHTML: incomingEmailData.isHTML,
-      attachments: incomingEmailData.attachments,
+      subject: emailData.subject ?? 'No Subject',
+      body: emailData.body,
+      isHTML: emailData.isHTML,
+      attachments: emailData.attachments,
     })
     console.log('Email sent!')
-    return Response.json({ message: 'OK' })
+  } else {
+    console.log(
+      'Email not from user, skipping...',
+      replyClient.userInbox.user.email,
+      emailData.from
+    )
   }
 
-  // If we get here, it means the email is being sent to a user inbox, from an external source (ie from help@washingtonpost.com)
+  return true
+}
+
+const handleEmailSentToUserInbox = async (emailData: Email) => {
+  const emailFrom = emailData.from!
+  const emailTo = emailData.to[0]!
+
   console.log('Fetching inbox...')
   const inboxQuery = qb.select(qb.Inbox, () => ({
     id: true,
@@ -124,6 +117,7 @@ export async function POST(request: Request) {
     externalEmail: emailFrom,
     userInbox: inboxQuery,
   })
+
   const newReplyClient = await qb
     .select(replyClientInsert, () => ({
       email: true,
@@ -137,15 +131,15 @@ export async function POST(request: Request) {
 
   const outgoingEmailHeader = headerHtml(
     inboxData.id,
-    incomingEmailData.id,
-    incomingEmailData.from ?? 'unknown',
+    emailData.id,
+    emailData.from ?? 'unknown',
     [inboxData.domains[0]?.name ?? 'unknown']
   )
 
   // Format the email body if it's not HTML (plain text)
-  const outgoingEmailBody = incomingEmailData.isHTML
-    ? incomingEmailData.body
-    : `<div>${incomingEmailData.body}</div>`
+  const outgoingEmailBody = emailData.isHTML
+    ? emailData.body
+    : `<div>${emailData.body}</div>`
   const outgoingEmailCompleteBody = outgoingEmailHeader + outgoingEmailBody
 
   // Build the email options for mailslurp
@@ -153,17 +147,43 @@ export async function POST(request: Request) {
     to: [inboxData.user.email],
     from: newReplyClient.email,
     replyTo: newReplyClient.email,
-    subject: `[${incomingEmailData.from}] - ${incomingEmailData.subject}`,
+    subject: `[${emailData.from}] - ${emailData.subject}`,
     body: outgoingEmailCompleteBody,
     isHTML: true,
-    attachments: incomingEmailData.attachments,
+    attachments: emailData.attachments,
   }
 
   // Send the email
   console.log('Sending email...')
   await mailslurp.sendEmail(mailslurpInbox.id, options)
   console.log('Email sent!')
+}
 
+export async function POST(request: Request) {
+  const payload = (await request.json()) as WebhookNewEmailPayload
+  const incomingEmailData = await mailslurp.getEmail(payload.emailId)
+  await mailslurp.emailController.markAsRead({
+    read: false,
+    emailId: incomingEmailData.id,
+  })
+
+  const emailFrom = incomingEmailData.from
+  const emailTo = incomingEmailData.to[0]
+
+  if (!emailTo || !emailFrom) {
+    console.log('Email missing to or from, skipping...', { emailTo, emailFrom })
+    return
+  }
+
+  const wasHandledByReplyClient =
+    await handleEmailSentToReplyClient(incomingEmailData)
+
+  if (wasHandledByReplyClient) {
+    return Response.json({ message: 'OK' })
+  }
+
+  // If we get here, it means the email is being sent to a user inbox, from an external source (ie from help@washingtonpost.com)
+  await handleEmailSentToUserInbox(incomingEmailData)
   return Response.json({ message: 'OK' })
 }
 

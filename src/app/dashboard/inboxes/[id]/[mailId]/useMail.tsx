@@ -13,7 +13,11 @@ export function useMail(inboxId: string | undefined | null) {
     router.push(`/dashboard/inboxes/${inboxId}/${id}`)
   }
 
-  const { data, isLoading, error } = api.inbox.getMailForInbox.useQuery(
+  const {
+    data: mail,
+    isLoading,
+    error,
+  } = api.inbox.getMailForInbox.useQuery(
     { inboxId: inboxId ?? '' },
     { enabled: !!inboxId, refetchInterval: 5000 }
   )
@@ -28,7 +32,7 @@ export function useMail(inboxId: string | undefined | null) {
   }, [selected, markAsRead])
 
   return {
-    data,
+    mail,
     isLoading,
     selected,
     error,
