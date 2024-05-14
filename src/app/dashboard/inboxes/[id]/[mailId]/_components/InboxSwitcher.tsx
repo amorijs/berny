@@ -34,7 +34,7 @@ export function InboxSwitcher({ currentInbox }: InboxSwitcherProps) {
 
   const router = useRouter()
 
-  const { data: inboxes = [], isLoading } = api.inbox.inboxes.useQuery({
+  const { data: inboxes = [] } = api.inbox.inboxes.useQuery({
     search: debouncedSearch,
   })
 

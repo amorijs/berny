@@ -6,7 +6,7 @@
  */
 
 import MailSlurp, {
-  Email,
+  type Email,
   type SendEmailOptions,
   type WebhookNewEmailPayload,
 } from 'mailslurp-client'

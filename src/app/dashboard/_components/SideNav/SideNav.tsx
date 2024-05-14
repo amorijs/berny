@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { Mails, Settings, UserCheck } from 'lucide-react'
+import { Mails, Settings } from 'lucide-react'
 
 import { NavLink } from './NavLink'
 
