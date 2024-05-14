@@ -50,6 +50,7 @@ import {
 } from '~/components/ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 const FormSchema = z.object({
   website: z.string().min(5, {
@@ -197,6 +198,7 @@ export default function Inboxes() {
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="flex items-center">
+            <Link href="/test/123">testing</Link>
             <Input
               type="search"
               placeholder="Search..."
@@ -216,10 +218,10 @@ export default function Inboxes() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="hidden sm:table-cell">Domain</TableHead>
+                <TableHead className="hidden sm:table-cell">Website</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
-                <TableHead className="hidden md:table-cell">Date</TableHead>
+                <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="hidden md:table-cell">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -263,7 +265,10 @@ export default function Inboxes() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem>Edit</DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => setInboxToDelete(inbox)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setInboxToDelete(inbox)
+                          }}
                         >
                           Delete
                         </DropdownMenuItem>

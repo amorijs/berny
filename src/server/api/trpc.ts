@@ -29,18 +29,17 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   const clerkUser = auth()
 
   const user = await qb
-    .select(qb.User, () => ({
+    .select(qb.User, (user) => ({
       id: true,
       clerkId: true,
+      email: true,
+      numOfInboxes: qb.count(user.inboxes),
       filter_single: { clerkId: clerkUser.userId },
     }))
     .run(client)
 
   return {
-    user: {
-      id: user?.id,
-      clerkId: user?.clerkId,
-    },
+    user,
     ...opts,
   }
 }
@@ -99,7 +98,7 @@ export const publicProcedure = t.procedure
 export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
   const { ctx } = opts
 
-  if (!ctx.user.clerkId) {
+  if (!ctx.user?.clerkId) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: 'User not found',
@@ -115,12 +114,7 @@ export const authedProcedure = t.procedure.use(async function isAuthed(opts) {
 
   return opts.next({
     ctx: {
-      ...ctx,
-      user: {
-        ...ctx.user,
-        id: ctx.user.id,
-        clerkId: ctx.user.clerkId,
-      },
+      user: ctx.user,
     },
   })
 })

@@ -14,6 +14,14 @@ export const inboxRouter = createTRPCRouter({
   create: authedProcedure
     .input(z.object({ domain: z.string().min(3) }))
     .mutation(async ({ ctx, input }) => {
+      if (ctx.user.numOfInboxes >= 10) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message:
+            'Berny currently only supports 10 inboxes per user. Premium plans coming soon!',
+        })
+      }
+
       const newEmail = createRandomEmail()
 
       const mailslurpInbox = await mailslurp.inboxController.createInbox({
