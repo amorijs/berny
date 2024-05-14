@@ -198,7 +198,6 @@ export default function Inboxes() {
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="flex items-center">
-            <Link href="/test/123">testing</Link>
             <Input
               type="search"
               placeholder="Search..."
