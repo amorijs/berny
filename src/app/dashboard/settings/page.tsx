@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from '~/components/ui/form'
 import { Input } from '~/components/ui/input'
-import { toast } from '~/components/ui/use-toast'
 import { api } from '~/trpc/react'
+import { EmailVerificationDialog } from './_components/EmailVerificationDialog'
 
 const FormSchema = z.object({
   email: z.string().min(3, {
@@ -34,6 +34,7 @@ const FormSchema = z.object({
 
 export default function Settings() {
   const [lockEmail, setLockEmail] = useState(false)
+  const [verificationId, setVerificationId] = useState<string | null>(null)
 
   const session = useSession()
   console.log({ session })
@@ -49,20 +50,17 @@ export default function Settings() {
 
   const { data: user, isLoading, error } = api.user.get.useQuery()
 
-  const { mutateAsync, isPending } = api.user.update.useMutation({
-    onSuccess: (data) => {
-      toast({
-        title: 'Email updated!',
-        description: <div>{data?.email}</div>,
-      })
+  const {
+    mutate: startEmailVerification,
+    isPending: isPendingStartEmailVerification,
+  } = api.user.startEmailVerification.useMutation({
+    onSuccess: (verificationId) => {
+      setVerificationId(verificationId)
     },
   })
 
-  const apiUtils = api.useUtils()
-
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    await mutateAsync({ email: data.email })
-    await apiUtils.user.get.invalidate()
+    startEmailVerification({ newEmail: data.email })
     setLockEmail(false)
   }
 
@@ -74,10 +72,17 @@ export default function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  const isSubmitDisabled = isPending || watchedEmail === user?.email
+  const isSubmitDisabled =
+    isPendingStartEmailVerification || watchedEmail === user?.email
 
   return (
     <Card>
+      <EmailVerificationDialog
+        open={!!verificationId}
+        onClose={() => setVerificationId(null)}
+        newEmail={watchedEmail}
+        verificationId={verificationId ?? ''}
+      />
       <CardHeader>
         <CardTitle>Settings</CardTitle>
         <CardDescription>Berny your way.</CardDescription>
@@ -90,7 +95,9 @@ export default function Settings() {
           >
             <FormField
               control={form.control}
-              disabled={isPending || isLoading || !user || !!error}
+              disabled={
+                isPendingStartEmailVerification || isLoading || !user || !!error
+              }
               name="email"
               render={({ field }) => (
                 <FormItem>

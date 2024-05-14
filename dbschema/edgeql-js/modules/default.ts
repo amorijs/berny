@@ -17,6 +17,21 @@ const $Domain = $.makeType<$Domain>(_.spec, "95333e21-0a9c-11ef-ba47-39f8d00079f
 
 const Domain: $.$expr_PathNode<$.TypeSet<$Domain, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($Domain, $.Cardinality.Many), null);
 
+export type $EmailVerificationλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588λShape & {
+  "createdAt": $.PropertyDesc<_std.$datetime, $.Cardinality.One, false, false, true, true>;
+  "expiresAt": $.PropertyDesc<_std.$datetime, $.Cardinality.One, false, false, false, false>;
+  "newEmail": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
+  "oldEmail": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
+  "otp": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
+  "user": $.LinkDesc<$User, $.Cardinality.One, {}, false, false,  false, false>;
+}>;
+type $EmailVerification = $.ObjectType<"default::EmailVerification", $EmailVerificationλShape, null, [
+  ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
+]>;
+const $EmailVerification = $.makeType<$EmailVerification>(_.spec, "b3a4281c-1180-11ef-a3e0-05d480c91753", _.syntax.literal);
+
+const EmailVerification: $.$expr_PathNode<$.TypeSet<$EmailVerification, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($EmailVerification, $.Cardinality.Many), null);
+
 export type $InboxλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588λShape & {
   "email": $.PropertyDesc<_std.$str, $.Cardinality.One, true, false, false, false>;
   "icon": $.PropertyDesc<_std.$str, $.Cardinality.AtMostOne, false, false, false, false>;
@@ -59,6 +74,7 @@ export type $UserλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c2
   "createdAt": $.PropertyDesc<_std.$datetime, $.Cardinality.One, false, false, true, true>;
   "inboxes": $.LinkDesc<$Inbox, $.Cardinality.Many, {}, false, true,  false, false>;
   "<user[is Inbox]": $.LinkDesc<$Inbox, $.Cardinality.Many, {}, false, false,  false, false>;
+  "<user[is EmailVerification]": $.LinkDesc<$EmailVerification, $.Cardinality.Many, {}, false, false,  false, false>;
   "<user": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
 }>;
 type $User = $.ObjectType<"default::User", $UserλShape, null, [
@@ -72,16 +88,18 @@ const User: $.$expr_PathNode<$.TypeSet<$User, $.Cardinality.Many>, null> = _.syn
 
 
 
-export { $Domain, Domain, $Inbox, Inbox, $ReplyClient, ReplyClient, $User, User };
+export { $Domain, Domain, $EmailVerification, EmailVerification, $Inbox, Inbox, $ReplyClient, ReplyClient, $User, User };
 
 type __defaultExports = {
   "Domain": typeof Domain;
+  "EmailVerification": typeof EmailVerification;
   "Inbox": typeof Inbox;
   "ReplyClient": typeof ReplyClient;
   "User": typeof User
 };
 const __defaultExports: __defaultExports = {
   "Domain": Domain,
+  "EmailVerification": EmailVerification,
   "Inbox": Inbox,
   "ReplyClient": ReplyClient,
   "User": User

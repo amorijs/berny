@@ -47,6 +47,7 @@
     "dotenv": "^16.4.5",
     "edgedb": "^1.5.5",
     "framer-motion": "^11.1.7",
+    "input-otp": "^1.2.4",
     "jotai": "^2.8.0",
     "lucide-react": "^0.376.0",
     "mailslurp-client": "^15.20.0",

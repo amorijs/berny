@@ -50,4 +50,17 @@ module default {
     required externalEmail: str;
     required single userInbox: Inbox;
   }
+
+  type EmailVerification {
+    required oldEmail: str;
+    required newEmail: str;
+    required otp: str;
+    required expiresAt: datetime;
+    required single user: User;
+
+    required property createdAt -> datetime {
+      default := std::datetime_current();
+      readonly := true;
+    };
+  }
 };

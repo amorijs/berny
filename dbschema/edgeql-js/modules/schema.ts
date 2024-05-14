@@ -695,6 +695,7 @@ export type $ObjectTypeλShape = $.typeutil.flatten<$SourceλShape & Omit<$Consi
   "<__type__[is User]": $.LinkDesc<_default.$User, $.Cardinality.Many, {}, false, false,  false, false>;
   "<__type__[is Domain]": $.LinkDesc<_default.$Domain, $.Cardinality.Many, {}, false, false,  false, false>;
   "<__type__[is ReplyClient]": $.LinkDesc<_default.$ReplyClient, $.Cardinality.Many, {}, false, false,  false, false>;
+  "<__type__[is EmailVerification]": $.LinkDesc<_default.$EmailVerification, $.Cardinality.Many, {}, false, false,  false, false>;
   "<__type__": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
   "<intersection_of": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
   "<subject": $.LinkDesc<$.ObjectType, $.Cardinality.Many, {}, false, false,  false, false>;
